@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST',
           body: formData,
         });
-
+        console.log(response); // Verifique a resposta do servidor
         const data = await response.json();
-
+        console.log(data); // Verifique os dados que estão sendo retornados
         if (response.ok) {
           resultadoTexto.innerHTML = `
             <p><strong>Descrição:</strong> ${data.descricao}</p>
@@ -54,9 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             body: formData,
           });
-
+          console.log(response); // Verifique a resposta do servidor
           const data = await response.json();
-
+          console.log(data); // Verifique os dados que estão sendo retornados
           if (response.ok) {
             resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.transcricao}</p>`;
           } else {
@@ -102,9 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             body: formData,
           }); 
-
+          console.log(response); // Verifique a resposta do servidor
           const data = await response.json();
-
+          console.log(data); // Verifique os dados que estão sendo retornados
           if (response.ok) {
             resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.transcricao}</p>`;
           } else {
@@ -131,9 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
               method: 'POST',
               body: formData,
             });
-
+            console.log(response); // Verifique a resposta do servidor
             const data = await response.json();
-
+            console.log(data); // Verifique os dados que estão sendo retornados
             if (response.ok) {
               resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.analise}</p>`;
             } else {
