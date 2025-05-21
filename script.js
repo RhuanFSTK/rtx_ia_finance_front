@@ -1,44 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Enviar texto para o backend
-    const textoForm = document.getElementById('texto-form');
-    const resultadoTexto = document.getElementById('resultado-texto');
+  const textoForm = document.getElementById('texto-form');
+  const resultadoTexto = document.getElementById('resultado-texto');
+  const resultadoAudioImagem = document.getElementById('resultado-audio-imagem');
 
-    textoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  const gravarBtn = document.getElementById('gravar-btn');
+  const carregarBtn = document.getElementById('carregar-btn');
+  const audioInput = document.getElementById('audio');
+  const imagemInput = document.getElementById('imagem');
 
-      const descricao = document.getElementById('descricao').value;
+  const capturaFotoBtn = document.getElementById('captura-foto-btn');
+  const videoElement = document.getElementById('video');
+  const canvasElement = document.getElementById('canvas');
 
-      const formData = new FormData();
-      formData.append('descricao', descricao);
+  let mediaRecorder;
+  let audioChunks = [];
 
-      try {
-        const response = await fetch('https://rtxfinance.up.railway.app/registro/', {
-          method: 'POST',
-          body: formData,
-        });
-        console.log(response); // Verifique a resposta do servidor
-        const data = await response.json();
-        console.log(data); // Verifique os dados que estão sendo retornados
-        if (response.ok) {
-          resultadoTexto.innerHTML = `
-            <p><strong>Descrição:</strong> ${data.descricao}</p>
-            <p><strong>Classificação:</strong> ${data.classificacao}</p>
-          `;
-        } else {
-          resultadoTexto.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
-        }
-      } catch (error) {
-        resultadoTexto.innerHTML = `<p style="color:red;">Erro de conexão: ${error.message}</p>`;
-      }
-    });
+  async function enviarArquivoParaAPI(endpoint, formData) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      return { ok: response.ok, data };
+    } catch (error) {
+      return { ok: false, data: { detail: error.message } };
+    }
+  }
 
-    // Gravar Áudio
-    const gravarBtn = document.getElementById('gravar-btn');
-    const resultadoAudioImagem = document.getElementById('resultado-audio-imagem');
+  textoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    gravarBtn.addEventListener('click', () => {
-      const mediaRecorder = new MediaRecorder(window.stream);
-      let audioChunks = [];
+    const descricao = document.getElementById('descricao').value;
+    const formData = new FormData();
+    formData.append('descricao', descricao);
+
+    const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/registro/', formData);
+
+    if (ok) {
+      resultadoTexto.innerHTML = `
+        <p><strong>Descrição:</strong> ${data.descricao}</p>
+        <p><strong>Classificação:</strong> ${data.classificacao}</p>
+      `;
+    } else {
+      resultadoTexto.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
+    }
+  });
+
+  gravarBtn.addEventListener('click', async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+
+      audioChunks = [];
 
       mediaRecorder.ondataavailable = (event) => {
         audioChunks.push(event.data);
@@ -47,150 +61,88 @@ document.addEventListener('DOMContentLoaded', () => {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         const formData = new FormData();
-        formData.append('audio', audioBlob);
+        formData.append('file', audioBlob); // Corrigido para 'file'
 
-        try {
-          const response = await fetch('https://rtxfinance.up.railway.app/audio/', {
-            method: 'POST',
-            body: formData,
-          });
-          console.log(response); // Verifique a resposta do servidor
-          const data = await response.json();
-          console.log(data); // Verifique os dados que estão sendo retornados
-          if (response.ok) {
-            resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.transcricao}</p>`;
-          } else {
-            resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
-          }
-        } catch (error) {
-          resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro de conexão: ${error.message}</p>`;
+        const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/audio/', formData);
+
+        if (ok) {
+          resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
+        } else {
+          resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
         }
       };
 
       mediaRecorder.start();
-
-      setTimeout(() => {
-        mediaRecorder.stop();
-      }, 5000); // Grava por 5 segundos
-    });
-
-    // Carregar Arquivo (Imagem ou Áudio)
-    const carregarBtn = document.getElementById('carregar-btn');
-    const audioInput = document.getElementById('audio');
-    const imagemInput = document.getElementById('imagem');
-
-    carregarBtn.addEventListener('click', () => {
-      // Alternar entre exibir o input de áudio e imagem
-      if (audioInput.style.display === "none") {
-        audioInput.style.display = "block";
-        imagemInput.style.display = "none";
-      } else if (imagemInput.style.display === "none") {
-        imagemInput.style.display = "block";
-        audioInput.style.display = "none";
-      }
-    });
-
-    // Enviar Arquivo (Imagem ou Áudio)
-    audioInput.addEventListener('change', async () => {
-      const file = audioInput.files[0];
-      if (file) {
-        const formData = new FormData();
-        formData.append('audio', file);
-
-        try {
-          const response = await fetch('https://rtxfinance.up.railway.app/audio/', {
-            method: 'POST',
-            body: formData,
-          }); 
-          console.log(response); // Verifique a resposta do servidor
-          const data = await response.json();
-          console.log(data); // Verifique os dados que estão sendo retornados
-          if (response.ok) {
-            resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.transcricao}</p>`;
-          } else {
-            resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
-          }
-        } catch (error) {
-          resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro de conexão: ${error.message}</p>`;
-        }
-      } 
-    });
-
-    imagemInput.addEventListener('change', async () => {
-      const file = imagemInput.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64Image = reader.result.split(',')[1];
-
-          const formData = new FormData();
-          formData.append('imagem', base64Image);
-
-          try {
-            const response = await fetch('https://rtxfinance.up.railway.app/imagem/', {
-              method: 'POST',
-              body: formData,
-            });
-            console.log(response); // Verifique a resposta do servidor
-            const data = await response.json();
-            console.log(data); // Verifique os dados que estão sendo retornados
-            if (response.ok) {
-              resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.analise}</p>`;
-            } else {
-              resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
-            }
-          } catch (error) {
-            resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro de conexão: ${error.message}</p>`;
-          }
-        };
-
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Capturar Foto com a Câmera
-    const capturaFotoBtn = document.getElementById('captura-foto-btn');
-    const videoElement = document.getElementById('video');
-    const canvasElement = document.getElementById('canvas');
-
-    capturaFotoBtn.addEventListener('click', async () => {
-      // Ativar a câmera
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoElement.srcObject = stream;
-        videoElement.style.display = 'block';
-
-        // Captura quando a câmera está ativa
-        setTimeout(() => {
-          const context = canvasElement.getContext('2d');
-          context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-          const base64Image = canvasElement.toDataURL('image/jpeg').split(',')[1];
-
-          // Enviar a imagem capturada
-          const formData = new FormData();
-          formData.append('imagem', base64Image);
-
-          fetch('https://rtxfinance.up.railway.app/imagem/', {
-            method: 'POST',
-            body: formData,
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.analise) {
-              resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.analise}</p>`;
-            } else {
-              resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
-            }
-          })
-          .catch(error => {
-            resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${error.message}</p>`;
-          });
-
-          // Desligar a câmera
-          stream.getTracks().forEach(track => track.stop());
-        }, 1000); // Aguardar um tempo para a câmera estabilizar
-      } else {
-        alert('A câmera não é suportada neste dispositivo.');
-      }
-    });
+      setTimeout(() => mediaRecorder.stop(), 5000);
+    } catch (err) {
+      resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro ao acessar microfone: ${err.message}</p>`;
+    }
   });
+
+  carregarBtn.addEventListener('click', () => {
+    const audioVisible = audioInput.style.display !== "none";
+    audioInput.style.display = audioVisible ? "none" : "block";
+    imagemInput.style.display = audioVisible ? "block" : "none";
+  });
+
+  audioInput.addEventListener('change', async () => {
+    const file = audioInput.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file); // Corrigido para 'file'
+
+      const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/audio/', formData);
+      if (ok) {
+        resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
+      } else {
+        resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
+      }
+    }
+  });
+
+  imagemInput.addEventListener('change', async () => {
+    const file = imagemInput.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file); // Corrigido para 'file'
+
+      const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/imagem/', formData);
+      if (ok) {
+        resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
+      } else {
+        resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
+      }
+    }
+  });
+
+  capturaFotoBtn.addEventListener('click', async () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoElement.srcObject = stream;
+      videoElement.style.display = 'block';
+
+      setTimeout(async () => {
+        const context = canvasElement.getContext('2d');
+        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+        const base64Image = canvasElement.toDataURL('image/jpeg').split(',')[1];
+
+        const blob = await (await fetch(`data:image/jpeg;base64,${base64Image}`)).blob();
+        const formData = new FormData();
+        formData.append('file', blob); // Corrigido para 'file'
+
+        const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/imagem/', formData);
+
+        if (ok) {
+          resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
+        } else {
+          resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
+        }
+
+        stream.getTracks().forEach(track => track.stop());
+        videoElement.style.display = 'none';
+      }, 1000);
+    } else {
+      alert('A câmera não é suportada neste dispositivo.');
+    }
+  });
+});
