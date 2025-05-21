@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agente Financeiro com IA</title>
+  <link rel="stylesheet" href="./src/style.css"/>
+</head>
+<body>
+  <h1>Agente Financeiro com IA</h1>
+
+  <!-- Campo de Texto -->
+  <section>
+    <h2>Descrição do Gasto</h2>
+    <form id="texto-form">
+      <label for="descricao">Digite a descrição do gasto:</label><br />
+      <input type="text" id="descricao" name="descricao" required />
+      <button type="submit">Classificar Gasto</button>
+    </form>
+    <div id="resultado-texto"></div>
+  </section>
+
+  <!-- Botões para Áudio e Imagem -->
+  <section>
+    <h2>Enviar Áudio ou Imagem</h2>
+    <button id="gravar-btn">Gravar Áudio</button>
+    <button id="carregar-btn">Carregar Arquivo</button>
+    <button id="captura-foto-btn">Tirar Foto</button>
+
+    <!-- Input de Áudio -->
+    <input type="file" id="audio" accept="audio/*" style="display: none;" />
+    <!-- Input de Imagem -->
+    <input type="file" id="imagem" accept="image/*" style="display: none;" />
+    
+    <div id="resultado-audio-imagem"></div>
+
+    <!-- Elementos para captura de imagem -->
+    <video id="video" width="320" height="240" autoplay style="display:none;"></video>
+    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
