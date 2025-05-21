@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,20 +29,20 @@
       border-color: #1a2533;
     }
 
-    video, canvas {
+    video,
+    canvas {
       margin-top: 15px;
       border-radius: 8px;
       border: 1px solid #ccc;
     }
   </style>
 </head>
-<body>
 
+<body>
   <div class="container py-5">
     <div class="text-center mb-5">
       <h1 class="fw-bold">💼 RTX - Agente Financeiro com IA</h1>
     </div>
-
     <!-- Descrição do Gasto -->
     <div class="card mb-4">
       <div class="card-body">
@@ -55,29 +56,24 @@
         <div id="resultado-texto" class="mt-3 alert alert-light d-none"></div>
       </div>
     </div>
-
     <!-- Áudio e Imagem -->
     <div class="card">
       <div class="card-body">
         <h4 class="card-title mb-3">🎤📷 Enviar Áudio ou Imagem</h4>
         <div class="d-grid gap-2">
-          <!-- Um botão e um input visível apenas via JS -->
-          <button id="carregar-btn" class="btn btn-outline-secondary">📂 Carregar Arquivo</button>  
+          <button id="gravar-btn" class="btn btn-outline-primary">🎙 Gravar Áudio</button>
+          <button id="carregar-btn" class="btn btn-outline-secondary">📂 Carregar Arquivo</button>
           <button id="captura-foto-btn" class="btn btn-outline-success">📸 Tirar Foto</button>
         </div>
-
         <!-- Inputs escondidos -->
-      <input type="file" id="arquivo" accept="audio/*,image/*" class="d-none" />
-
+        <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none">
         <div id="resultado-audio-imagem" class="mt-3 alert alert-light d-none"></div>
-
         <!-- Captura de imagem -->
         <video id="video" width="100%" height="240" autoplay class="d-none"></video>
         <canvas id="canvas" width="100%" height="240" class="d-none"></canvas>
       </div>
     </div>
   </div>
-
   <div class="card my-4">
     <div class="card-body">
       <h4 class="card-title mb-3">📊 Consultar Gastos por Período</h4>
@@ -99,5 +95,7 @@
   <!-- Bootstrap JS (opcional, útil para componentes como modais, dropdowns etc.) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
+  
 </body>
+
 </html>
