@@ -42,23 +42,28 @@ document.addEventListener("DOMContentLoaded", () => {
 			formData
 		);
 
-		if (ok) {
-			resultadoTexto.innerHTML = `
-        <div class="alert alert-success">
-          <strong>✅ Gasto registrado com sucesso!</strong><br>
-          <strong>Descrição:</strong> ${data.descricao}<br>
-          <strong>Classificação:</strong> ${data.classificacao}<br>
-          <strong>Valor:</strong> R$ ${parseFloat(data.valor).toFixed(2)}
-        </div>
-      `;
+		const resultadoBox = document.getElementById("resultado-texto");
+		resultadoBox.classList.remove("d-none");
+
+		if (ok && data.salvo) {
+			resultadoBox.innerHTML = `
+				<div class="alert alert-success">
+					<strong>✅ Gasto registrado com sucesso!</strong><br>
+					<strong>Descrição (GPT):</strong> ${data.gpt.descricao}<br>
+					<strong>Classificação:</strong> ${data.gpt.classificacao}<br>
+					<strong>Valor:</strong> R$ ${parseFloat(data.gpt.valor).toFixed(2)}
+				</div>
+			`;
+			document.getElementById("descricao").value = "";  // Limpa input
 		} else {
-			resultadoTexto.innerHTML = `
-        <div class="alert alert-danger">
-          ❌ Erro: ${data.detail || "Erro desconhecido"}
-        </div>
-      `;
+			resultadoBox.innerHTML = `
+				<div class="alert alert-danger">
+					❌ Erro: ${data.detail || "Erro desconhecido"}
+				</div>
+			`;
 		}
 	});
+
 
 	gravarBtn.addEventListener("click", async () => {
 		try {
@@ -125,16 +130,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		const file = imagemInput.files[0];
 		if (file) {
 			const formData = new FormData();
-			formData.append("file", file); // Corrigido para 'file'
+			formData.append("file", file);
 
 			const { ok, data } = await enviarArquivoParaAPI(
-				"https://rtxfinance.up.railway.app/imagem/",
-				formData
+			"https://rtxfinance.up.railway.app/imagem/",
+			formData
 			);
 			if (ok) {
-				resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
+			resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
 			} else {
-				resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
+			resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
 			}
 		}
 	});
