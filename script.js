@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const response = await fetch('https://rtxfinance.up.railway.app/audio/', {
             method: 'POST',
             body: formData,
-          });
+          }); 
 
           const data = await response.json();
 
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
           resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro de conexão: ${error.message}</p>`;
         }
-      }
+      } 
     });
 
     imagemInput.addEventListener('change', async () => {
