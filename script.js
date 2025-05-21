@@ -1,14 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const textoForm = document.getElementById("texto-form");
 	const resultadoTexto = document.getElementById("resultado-texto");
-	const resultadoAudioImagem = document.getElementById(
-		"resultado-audio-imagem"
-	);
+	const resultadoAudioImagem = document.getElementById("resultado-audio-imagem");
 
 	const gravarBtn = document.getElementById("gravar-btn");
 	const carregarBtn = document.getElementById("carregar-btn");
-	const audioInput = document.getElementById("audio");
-	const imagemInput = document.getElementById("imagem");
+	const arquivoInput = document.getElementById("arquivo"); // Único input agora
 
 	const capturaFotoBtn = document.getElementById("captura-foto-btn");
 	const videoElement = document.getElementById("video");
@@ -54,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					<strong>Valor:</strong> R$ ${parseFloat(data.gpt.valor).toFixed(2)}
 				</div>
 			`;
-			document.getElementById("descricao").value = "";  // Limpa input
+			document.getElementById("descricao").value = "";
 		} else {
 			resultadoBox.innerHTML = `
 				<div class="alert alert-danger">
@@ -64,14 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-
 	gravarBtn.addEventListener("click", async () => {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true,
-			});
+			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 			mediaRecorder = new MediaRecorder(stream);
-
 			audioChunks = [];
 
 			mediaRecorder.ondataavailable = (event) => {
@@ -81,13 +74,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			mediaRecorder.onstop = async () => {
 				const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
 				const formData = new FormData();
-				formData.append("file", audioBlob); // Corrigido para 'file'
+				formData.append("file", audioBlob);
 
 				const { ok, data } = await enviarArquivoParaAPI(
 					"https://rtxfinance.up.railway.app/audio/",
 					formData
 				);
 
+				resultadoAudioImagem.classList.remove("d-none");
 				if (ok) {
 					resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
 				} else {
@@ -98,84 +92,68 @@ document.addEventListener("DOMContentLoaded", () => {
 			mediaRecorder.start();
 			setTimeout(() => mediaRecorder.stop(), 5000);
 		} catch (err) {
+			resultadoAudioImagem.classList.remove("d-none");
 			resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro ao acessar microfone: ${err.message}</p>`;
 		}
 	});
 
 	carregarBtn.addEventListener("click", () => {
-		const audioVisible = audioInput.style.display !== "none";
-		audioInput.style.display = audioVisible ? "none" : "block";
-		imagemInput.style.display = audioVisible ? "block" : "none";
+		arquivoInput.click(); // Abre o seletor de arquivo
 	});
 
-	audioInput.addEventListener("change", async () => {
-		const file = audioInput.files[0];
-		if (file) {
-			const formData = new FormData();
-			formData.append("file", file); // Corrigido para 'file'
+	arquivoInput.addEventListener("change", async () => {
+		const file = arquivoInput.files[0];
+		if (!file) return;
 
-			const { ok, data } = await enviarArquivoParaAPI(
-				"https://rtxfinance.up.railway.app/audio/",
-				formData
-			);
-			if (ok) {
+		const formData = new FormData();
+		formData.append("file", file);
+
+		let endpoint;
+		if (file.type.startsWith("audio/")) {
+			endpoint = "https://rtxfinance.up.railway.app/audio/";
+		} else if (file.type.startsWith("image/")) {
+			endpoint = "https://rtxfinance.up.railway.app/imagem/";
+		} else {
+			resultadoAudioImagem.classList.remove("d-none");
+			resultadoAudioImagem.innerHTML = `<p style="color:red;">Tipo de arquivo não suportado.</p>`;
+			return;
+		}
+
+		const { ok, data } = await enviarArquivoParaAPI(endpoint, formData);
+		resultadoAudioImagem.classList.remove("d-none");
+
+		if (ok) {
+			if (endpoint.includes("audio")) {
 				resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
 			} else {
-				resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
+				resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
 			}
-		}
-	});
-
-	imagemInput.addEventListener("change", async () => {
-		const file = imagemInput.files[0];
-		if (file) {
-			const formData = new FormData();
-			formData.append("file", file);
-
-			const { ok, data } = await enviarArquivoParaAPI(
-			"https://rtxfinance.up.railway.app/imagem/",
-			formData
-			);
-			if (ok) {
-			resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
-			} else {
+		} else {
 			resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
-			}
 		}
 	});
 
 	capturaFotoBtn.addEventListener("click", async () => {
 		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: true,
-			});
+			const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 			videoElement.srcObject = stream;
 			videoElement.style.display = "block";
 
 			setTimeout(async () => {
 				const context = canvasElement.getContext("2d");
-				context.drawImage(
-					videoElement,
-					0,
-					0,
-					canvasElement.width,
-					canvasElement.height
-				);
-				const base64Image = canvasElement
-					.toDataURL("image/jpeg")
-					.split(",")[1];
+				context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+				const base64Image = canvasElement.toDataURL("image/jpeg").split(",")[1];
 
-				const blob = await (
-					await fetch(`data:image/jpeg;base64,${base64Image}`)
-				).blob();
+				const blob = await (await fetch(`data:image/jpeg;base64,${base64Image}`)).blob();
 				const formData = new FormData();
-				formData.append("file", blob); // Corrigido para 'file'
+				formData.append("file", blob);
 
 				const { ok, data } = await enviarArquivoParaAPI(
 					"https://rtxfinance.up.railway.app/imagem/",
 					formData
 				);
 
+				resultadoAudioImagem.classList.remove("d-none");
 				if (ok) {
 					resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
 				} else {
@@ -205,30 +183,25 @@ document.addEventListener("DOMContentLoaded", () => {
 			);
 			const data = await res.json();
 
+			resultadoConsulta.classList.remove("d-none");
 			if (data.gastos.length === 0) {
 				resultadoConsulta.innerHTML = `<div class="alert alert-warning">Nenhum gasto encontrado no período.</div>`;
 			} else {
-				let html = `<div class="alert alert-success"><strong>Total gasto:</strong> R$ ${data.total.toFixed(
-					2
-				)}</div><ul class="list-group mt-2">`;
+				let html = `<div class="alert alert-success"><strong>Total gasto:</strong> R$ ${data.total.toFixed(2)}</div><ul class="list-group mt-2">`;
 				data.gastos.forEach((gasto) => {
 					html += `
-          <li class="list-group-item">
-            <strong>${gasto.descricao}</strong><br />
-            ${gasto.classificacao} - R$ ${parseFloat(gasto.valor).toFixed(
-						2
-					)}<br />
-            <small>${new Date(gasto.data_hora).toLocaleString()}</small>
-          </li>`;
+					<li class="list-group-item">
+						<strong>${gasto.descricao}</strong><br />
+						${gasto.classificacao} - R$ ${parseFloat(gasto.valor).toFixed(2)}<br />
+						<small>${new Date(gasto.data_hora).toLocaleString()}</small>
+					</li>`;
 				});
 				html += `</ul>`;
 				resultadoConsulta.innerHTML = html;
 			}
-
-			resultadoConsulta.classList.remove("d-none");
 		} catch (err) {
-			resultadoConsulta.innerHTML = `<div class="alert alert-danger">Erro ao consultar gastos: ${err.message}</div>`;
 			resultadoConsulta.classList.remove("d-none");
+			resultadoConsulta.innerHTML = `<div class="alert alert-danger">Erro ao consultar gastos: ${err.message}</div>`;
 		}
 	});
 });
