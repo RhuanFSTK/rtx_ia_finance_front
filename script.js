@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				formData.append("file", audioBlob);
 
 				const { ok, data } = await enviarArquivoParaAPI(
-					"https://rtxfinance.up.railway.app/audio/",
+					"https://rtxapi.up.railway.app/audio/",
 					formData
 				);
 				resultadoAudioImagem.classList.remove("d-none");
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				formData.append("file", blob);
 
 				const { ok, data } = await enviarArquivoParaAPI(
-					"https://rtxfinance.up.railway.app/imagem/",
+					"https://rtxapi.up.railway.app/imagem/",
 					formData
 				);
 				resultadoAudioImagem.classList.remove("d-none");
@@ -120,9 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		let endpoint = "";
 		if (file.type.startsWith("image/")) {
-			endpoint = "https://rtxfinance.up.railway.app/imagem/";
+			endpoint = "https://rtxapi.up.railway.app/imagem/";
 		} else if (file.type.startsWith("audio/")) {
-			endpoint = "https://rtxfinance.up.railway.app/audio/";
+			endpoint = "https://rtxapi.up.railway.app/audio/";
 		} else {
 			resultadoAudioImagem.classList.remove("d-none");
 			resultadoAudioImagem.innerHTML = `<p style="color:red;">Tipo de arquivo não suportado.</p>`;
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		formData.append("descricao", descricao);
 
 		const { ok, data } = await enviarArquivoParaAPI(
-			"https://rtxfinance.up.railway.app/registro/",
+			"https://rtxapi.up.railway.app/registro/",
 			formData
 		);
 
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		try {
 			const res = await fetch(
-				`https://rtxfinance.up.railway.app/registro/consulta/?data_inicio=${inicio}&data_fim=${fim}`
+				`https://rtxapi.up.railway.app/registro/consulta/?data_inicio=${inicio}&data_fim=${fim}`
 			);
 			const data = await res.json();
 
