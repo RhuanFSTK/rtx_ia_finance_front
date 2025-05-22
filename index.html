@@ -43,6 +43,7 @@
     <div class="text-center mb-5">
       <h1 class="fw-bold">💼 RTX - Agente Financeiro com IA</h1>
     </div>
+
     <!-- Descrição do Gasto -->
     <div class="card mb-4">
       <div class="card-body">
@@ -56,24 +57,29 @@
         <div id="resultado-texto" class="mt-3 alert alert-light d-none"></div>
       </div>
     </div>
+
     <!-- Áudio e Imagem -->
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title mb-3">🎤📷 Enviar Áudio ou Imagem</h4>
-        <div class="d-grid gap-2">
+        <!-- <h4 class="card-title mb-3">Enviar Áudio ou Imagem</h4> -->
+        <div class="d-grid gap-2 col-4">
           <button id="gravar-btn" class="btn btn-outline-primary">🎙 Gravar Áudio</button>
-          <button id="carregar-btn" class="btn btn-outline-secondary">📂 Carregar Arquivo</button>
           <button id="captura-foto-btn" class="btn btn-outline-success">📸 Tirar Foto</button>
+          <button id="carregar-btn" class="btn btn-outline-secondary">📂 Carregar Arquivo</button>
         </div>
+
         <!-- Inputs escondidos -->
         <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none">
         <div id="resultado-audio-imagem" class="mt-3 alert alert-light d-none"></div>
+
         <!-- Captura de imagem -->
         <video id="video" width="100%" height="240" autoplay class="d-none"></video>
         <canvas id="canvas" width="100%" height="240" class="d-none"></canvas>
+
       </div>
     </div>
   </div>
+
   <div class="card my-4">
     <div class="card-body">
       <h4 class="card-title mb-3">📊 Consultar Gastos por Período</h4>
