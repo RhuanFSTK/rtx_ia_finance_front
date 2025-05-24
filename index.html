@@ -181,31 +181,31 @@
                             <tbody>
                                 <tr>
                                     <td>Almoço no restaurante</td>
-                                    <td>2025-05-20</td>
+                                    <td>20-03-2025</td>
                                     <td>R$ 35,90</td>
                                     <td>Alimentação</td>
                                 </tr>
                                 <tr>
                                     <td>Transporte de ida</td>
-                                    <td>2025-05-21</td>
+                                    <td>21-03-2025</td>
                                     <td>R$ 12,50</td>
                                     <td>Transporte</td>
                                 </tr>
                                 <tr>
                                     <td>Compra de material de escritório</td>
-                                    <td>2025-05-22</td>
+                                    <td>25-03-2025</td>
                                     <td>R$ 45,00</td>
                                     <td>Escritório</td>
                                 </tr>
                                 <tr>
                                     <td>Jantar com amigos</td>
-                                    <td>2025-05-23</td>
+                                    <td>30-03-2025</td>
                                     <td>R$ 60,00</td>
                                     <td>Alimentação</td>
                                 </tr>
                                 <tr>
                                     <td>Uber para reunião</td>
-                                    <td>2025-05-24</td>
+                                    <td>02-04-2025</td>
                                     <td>R$ 25,00</td>
                                     <td>Transporte</td>
                                 </tr>
@@ -214,35 +214,37 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Scripts -->
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-            <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-            <script>
-                $(document).ready(function() {
-                    $('#tabela-gastos').DataTable({
-                        paging: true,
-                        searching: true,
-                        ordering: true,
-                        language: {
-                            lengthMenu: "Mostrar _MENU_ registros por página",
-                            zeroRecords: "Nenhum registro encontrado",
-                            info: "Mostrando página _PAGE_ de _PAGES_",
-                            infoEmpty: "Nenhum registro disponível",
-                            infoFiltered: "(filtrado de _MAX_ registros no total)",
-                            search: "Pesquisar:",
-                            paginate: {
-                                first: "Primeira",
-                                last: "Última",
-                                next: "Próxima",
-                                previous: "Anterior"
-                            }
-                        }
-                    });
-                });
-                
-            </script>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#tabela-gastos').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                language: {
+                    lengthMenu: "Mostrar _MENU_ registros por página",
+                    zeroRecords: "Nenhum registro encontrado",
+                    info: "Mostrando página _PAGE_ de _PAGES_",
+                    infoEmpty: "Nenhum registro disponível",
+                    infoFiltered: "(filtrado de _MAX_ registros no total)",
+                    search: "Pesquisar:",
+                    paginate: {
+                        first: "Primeira",
+                        last: "Última",
+                        next: "Próxima",
+                        previous: "Anterior"
+                    }
+                }
+            });
+        });
+        
+    </script>
 </body>
 
 </html>
