@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showLoading();
 
     try {
-      const res = await fetch("https://rtxapi.up.railway.app/descricao/", {
+      const res = await fetch("https://rtxapi.up.railway.app/registro/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ descricao }),
