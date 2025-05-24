@@ -1,10 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-	// Elementos do DOM
 	const cardResultado = document.getElementById("cardResultado");
 	const resultadoTexto = document.getElementById("resultado-texto");
-	const resultadoAudioImagem = document.getElementById(
-		"resultado-audio-imagem"
-	);
+	const resultadoAudioImagem = document.getElementById("resultado-audio-imagem");
 	const loadingSpinner = document.getElementById("loading-spinner");
 	const waveformContainer = document.getElementById("waveform-container");
 	const videoElement = document.getElementById("video");
@@ -15,10 +12,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	const arquivoInput = document.getElementById("arquivo-input");
 	const textoForm = document.getElementById("texto-form");
 	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
-	const btnCancelarGravacao = document.getElementById(
-		"btn-cancelar-gravacao"
-	);
+	const btnCancelarGravacao = document.getElementById("btn-cancelar-gravacao");
 	const controlesGravacao = document.getElementById("controles-gravacao");
+
+	// Eventos dos botões e formulário
+	gravarBtn.addEventListener("click", toggleGravacao);
+	btnEnviarGravacao.addEventListener("click", enviarGravacao);
+	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
+	capturaFotoBtn.addEventListener("click", tirarFoto);
+	carregarBtn.addEventListener("click", () => arquivoInput.click());
+	arquivoInput.addEventListener("change", carregarArquivo);
+	textoForm.addEventListener("submit", enviarTexto);
 
 	let mediaRecorder;
 	let audioChunks = [];
@@ -34,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		loadingSpinner.classList.add("d-none");
 	}
 
-	// Formata erros retornados pela API para exibição
 	function formatarErroApi(data) {
 		if (!data) return "Erro desconhecido";
 		if (typeof data === "string") return data;
@@ -55,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// Mostra mensagem formatada (alert bootstrap) em container indicado
 	function mostrarResultado(container, tipo, mensagem) {
 		container.className = "";
 		container.classList.add("alert", `alert-${tipo}`, "fade", "show");
@@ -65,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		cardResultado.classList.remove("collapse");
 	}
 
-	// Envia arquivo para API no endpoint indicado, retorna {ok, data}
 	async function enviarArquivoParaAPI(endpoint, formData) {
 		try {
 			const response = await fetch(endpoint, {
@@ -76,6 +77,43 @@ document.addEventListener("DOMContentLoaded", () => {
 			return { ok: response.ok, data };
 		} catch (error) {
 			return { ok: false, data: { detail: error.message } };
+		}
+	}
+
+	// *** Ajuste no handler do formulário de texto ***
+	async function enviarTexto(event) {
+		event.preventDefault(); // corrigido: troca e -> event
+		showLoading();
+
+		const descricao = document.getElementById("descricao").value;
+		const formData = new FormData();
+		formData.append("descricao", descricao);
+
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxfinance.up.railway.app/registro/",
+			formData
+		);
+
+		hideLoading();
+
+		if (ok && data.salvo) {
+			const { descricao, classificacao, valor } = data.gpt;
+			mostrarResultado(
+				resultadoTexto,
+				"success",
+				`<strong>Registrado com sucesso!</strong><br>
+				 <strong>Descrição:</strong> ${descricao}<br>
+				 <strong>Classificação:</strong> ${classificacao}<br>
+				 <strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
+			);
+			textoForm.reset();
+		} else {
+			const errorMsg = formatarErroApi(data);
+			mostrarResultado(
+				resultadoTexto,
+				"danger",
+				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+			);
 		}
 	}
 
@@ -314,59 +352,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Envia texto do formulário para API e mostra resposta GPT
 	async function enviarTexto(event) {
-		event.preventDefault();
-		showLoading();
+		e.preventDefault();
 
-		const formData = new FormData(textoForm);
-		try {
-			const response = await fetch(
-				"https://rtxfinance.up.railway.app/registro/",
-				{
-					method: "POST",
-					body: formData,
-					headers: {
-						Accept: "application/json",
-					},
-				}
+		const descricao = document.getElementById('descricao').value;
+		const formData = new FormData();
+		formData.append('descricao', descricao);
+
+		const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/registro/', formData);
+
+		if (ok) {
+		resultadoTexto.innerHTML = `
+			<p><strong>Descrição:</strong> ${data.descricao}</p>
+			<p><strong>Classificação:</strong> ${data.classificacao}</p>
+		`;
+		} else {
+		resultadoTexto.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
+		}
+
+		const data = await response.json();
+		hideLoading();
+
+		if (response.ok && data.gpt) {
+			const { descricao, classificacao, valor } = data.gpt;
+			mostrarResultado(
+				resultadoTexto,
+				"success",
+				`<strong>Registrado com sucesso!</strong><br>
+		<strong>Descrição:</strong> ${descricao}<br>
+		<strong>Classificação:</strong> ${classificacao}<br>
+		<strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
 			);
-
-			const data = await response.json();
-			hideLoading();
-
-			if (response.ok && data.gpt) {
-				const { descricao, classificacao, valor } = data.gpt;
-				mostrarResultado(
-					resultadoTexto,
-					"success",
-					`<strong>Registrado com sucesso!</strong><br>
-         <strong>Descrição:</strong> ${descricao}<br>
-         <strong>Classificação:</strong> ${classificacao}<br>
-         <strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
-				);
-			} else {
-				const errorMsg = formatarErroApi(data);
-				mostrarResultado(
-					resultadoTexto,
-					"danger",
-					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-				);
-			}
-		} catch (err) {
-			hideLoading();
+		} else {
+			const errorMsg = formatarErroApi(data);
 			mostrarResultado(
 				resultadoTexto,
 				"danger",
-				`<strong>Erro na requisição:</strong> ${err.message}`
+				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
 			);
 		}
+	} catch (err) {
+		hideLoading();
+		mostrarResultado(
+			resultadoTexto,
+			"danger",
+			`<strong>Erro na requisição:</strong> ${err.message}`
+		);
 	}
-
-	// Eventos dos botões e formulário
-	gravarBtn.addEventListener("click", toggleGravacao);
-	btnEnviarGravacao.addEventListener("click", enviarGravacao);
-	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
-	capturaFotoBtn.addEventListener("click", tirarFoto);
-	carregarBtn.addEventListener("click", () => arquivoInput.click());
-	arquivoInput.addEventListener("change", carregarArquivo);
-	textoForm.addEventListener("submit", enviarTexto);
 });
