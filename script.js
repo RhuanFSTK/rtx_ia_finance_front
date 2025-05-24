@@ -83,6 +83,22 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
+	function tocarAudioLocal() {
+		if (audioChunks.length === 0) return;
+
+		const blob = new Blob(audioChunks, { type: "audio/webm" });
+		const audioURL = URL.createObjectURL(blob);
+
+		const audioElement = document.createElement("audio");
+		audioElement.controls = true;      // mostra controles de play/pause
+		audioElement.src = audioURL;
+
+		// Limpa o container e adiciona o player
+		resultadoAudioImagem.innerHTML = "";
+		resultadoAudioImagem.appendChild(audioElement);
+		resultadoAudioImagem.classList.remove("d-none");
+	}
+
 	async function toggleGravacao() {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
@@ -127,7 +143,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (stream) {
 					stream.getTracks().forEach((track) => track.stop());
 				}
+
+				// Aqui chama para mostrar o player e deixar ouvir o áudio antes de enviar
+				tocarAudioLocal();
 			};
+
 
 			mediaRecorder.start();
 			gravarBtn.textContent = "⏹ Parar";
@@ -179,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		waveformContainer.classList.add("collapse");
 		waveformContainer.classList.remove("show");
 	}
+
 
 	function cancelarGravacao() {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
