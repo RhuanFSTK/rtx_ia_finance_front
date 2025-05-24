@@ -22,6 +22,22 @@ document.addEventListener("DOMContentLoaded", () => {
 	let audioChunks = [];
 	let stream;
 
+	const inputInicio = document.getElementById("data-inicio");
+	const inputFim = document.getElementById("data-fim");
+
+	const hoje = new Date();
+	const umMesAtras = new Date();
+	
+	umMesAtras.setMonth(hoje.getMonth() - 1);
+
+	// Corrige meses com menos dias (ex: 31 de março -> 28 de fevereiro)
+	if (umMesAtras.getDate() !== hoje.getDate()) {
+		umMesAtras.setDate(0); // último dia do mês anterior
+	}
+
+	inputInicio.value = umMesAtras.toISOString().split("T")[0];
+	inputFim.value = hoje.toISOString().split("T")[0];
+
 	function showLoading() {
 		loadingSpinner.classList.remove("d-none");
 		cardResultado.classList.add("show");
