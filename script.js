@@ -171,8 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (ok && data.salvo) {
 			resultadoTexto.innerHTML = `
 				<div class="alert alert-success">
-					<strong>✅ Gasto registrado com sucesso!</strong><br>
-					<strong>Descrição (GPT):</strong> ${data.gpt.descricao}<br>
+					<strong>Registrado com sucesso!</strong><br>
+					<strong>Descrição:</strong> ${data.gpt.descricao}<br>
 					<strong>Classificação:</strong> ${data.gpt.classificacao}<br>
 					<strong>Valor:</strong> R$ ${parseFloat(data.gpt.valor).toFixed(2)}
 				</div>`;
