@@ -2,197 +2,248 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agente Financeiro</title>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet" />
-  <style>
-    body {
-      background-color: #E6F0FA;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agente Financeiro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css">
 
-    .card {
-      border: none;
-      border-radius: 12px;
-    }
+    <style>
+        body {
+            background-color: #E6F0FA;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-    .btn-dark-blue {
-      background-color: #2e3b4e;
-      border-color: #2e3b4e;
-      color: white;
-    }
+        .card {
+            border: none;
+            border-radius: 12px;
+        }
 
-    .btn-dark-blue:hover {
-      background-color: #1a2533;
-      border-color: #1a2533;
-    }
+        .btn-dark-blue {
+            background-color: #2e3b4e;
+            border-color: #2e3b4e;
+            color: white;
+        }
 
-    input[type="text"]:focus,
-    input[type="date"]:focus {
-      border-color: #2e3b4e;
-      box-shadow: 0 0 0 0.2rem rgba(46, 59, 78, 0.25);
-    }
+        .btn-dark-blue:hover {
+            background-color: #1a2533;
+            border-color: #1a2533;
+        }
 
-    /* Ajuste para o vídeo e canvas ocuparem o espaço certo */
-    #video,
-    #canvas {
-      width: 100%;
-      height: 240px;
-      border-radius: 12px;
-      object-fit: cover;
-      background-color: black;
-    }
+        input[type="text"]:focus,
+        input[type="date"]:focus {
+            border-color: #2e3b4e;
+            box-shadow: 0 0 0 0.2rem rgba(46, 59, 78, 0.25);
+        }
 
-    /* Tabela de exemplo para consulta */
-    .table {
-      width: 100%;
-      margin-top: 20px;
-    }
+        /* Ajuste para o vídeo e canvas ocuparem o espaço certo */
+        #video,
+        #canvas {
+            width: 100%;
+            height: 240px;
+            border-radius: 12px;
+            object-fit: cover;
+            background-color: black;
+        }
 
-    .table th, .table td {
-      text-align: center;
-    }
+        /* Tabela de exemplo para consulta */
+        .table {
+            width: 100%;
+            margin-top: 20px;
+        }
 
-    .table th {
-      background-color: #2e3b4e;
-      color: white;
-    }
+        .table th,
+        .table td {
+            text-align: center;
+        }
 
-    .table td {
-      font-weight: 600;
-    }
-  </style>
+        .table th {
+            background-color: #2e3b4e;
+            color: white;
+        }
+
+        .table td {
+            font-weight: 600;
+        }
+
+        /* Ajuste para o vídeo e canvas ocuparem o espaço certo */
+        #video,
+        #canvas {
+            width: 100%;
+            height: 240px;
+            border-radius: 12px;
+            object-fit: cover;
+            background-color: black;
+        }
+    </style>
 </head>
 
 <body class="p-3">
-  <div class="container py-5">
-    <div class="text-center mb-5">
-      <h1 class="fw-bold">💼 RTX - Agente Financeiro com IA</h1>
-      <p class="text-muted fs-5">Gerencie seus gastos com inteligência</p>
-    </div>
-
-    <!-- Descrição do Gasto -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body">
-        <h4 class="card-title mb-3">📝 Nova Despesa</h4>
-        <form id="texto-form">
-          <div class="input-group mb-3">
-            <input type="text" id="descricao" name="descricao" class="form-control"
-              placeholder="Ex: Almoço no restaurante R$ 35,90" required />
-            <button type="submit" class="btn btn-dark-blue">Enviar</button>
-          </div>
-        </form>
-        <div id="resultado-texto" class="mt-3 alert alert-light d-none"></div>
-      </div>
-    </div>
-
-    <!-- Ações: Gravar Áudio, Tirar Foto, Carregar Arquivo -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body">
-        <h4 class="card-title mb-3">🎛 Captura de Informações</h4>
-        <div class="row g-3">
-          <div class="col-md-4">
-            <button id="gravar-btn" class="btn btn-outline-primary w-100">🎙 Gravar Áudio</button>
-          </div>
-          <div class="col-md-4">
-            <button id="captura-foto-btn" class="btn btn-outline-success w-100">📸 Capturar Foto</button>
-          </div>
-          <div class="col-md-4">
-            <button id="carregar-btn" class="btn btn-outline-secondary w-100">📂 Carregar Arquivo</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Resultado de Áudio/Imagem -->
-    <div id="cardResultado" class="card mb-4 collapse shadow-sm">
-      <div class="card-body">
-        <!-- Botões de controle de gravação -->
-        <div id="controles-gravacao" class="d-none mt-3 text-center">
-          <button id="btn-enviar-gravacao" class="btn btn-success me-2">✅ Enviar</button>
-          <button id="btn-cancelar-gravacao" class="btn btn-danger">❌ Cancelar</button>
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold">💼 RTX - Agente Financeiro com IA</h1>
+            <p class="text-muted fs-5">Gerencie seus gastos com inteligência</p>
         </div>
 
-        <div id="waveform-container" class="collapse mb-3">
-          <div id="waveform"></div>
-        </div>
-
-        <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none" />
-        <div id="resultado-audio-imagem" class="mt-3"></div>
-
-        <!-- Video e Canvas para captura da câmera -->
-        <video id="video" autoplay class="d-none rounded"></video>
-        <canvas id="canvas" class="d-none rounded"></canvas>
-
-        <div id="loading-spinner" class="d-none mt-3 text-center">
-          <div class="spinner-border text-primary" role="status"></div>
-          <div class="mt-2">Processando...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Consulta -->
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h4 class="card-title mb-3">📊 Consultar Gastos por Período</h4>
-        <form id="consulta-form">
-          <div class="row g-3 align-items-end">
-            <div class="col-md-5">
-              <label for="data-inicio" class="form-label">Data Início</label>
-              <input type="date" id="data-inicio" class="form-control" required />
+        <!-- Descrição do Gasto -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title mb-3">📝 Nova Despesa</h4>
+                <form id="texto-form">
+                    <div class="input-group mb-3">
+                        <input type="text" id="descricao" name="descricao" class="form-control"
+                            placeholder="Ex: Almoço no restaurante R$ 35,90" required />
+                        <button type="submit" class="btn btn-dark-blue">Enviar</button>
+                    </div>
+                </form>
             </div>
-            <div class="col-md-5">
-              <label for="data-fim" class="form-label">Data Fim</label>
-              <input type="date" id="data-fim" class="form-control" required />
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-dark-blue w-100" type="submit">Consultar</button>
-            </div>
-          </div>
-        </form>
-
-        <!-- Tabela de exemplo para consulta -->
-        <div id="resultado-consulta" class="mt-4">
-          <div class="bd-example">
-            <table class="table table-success table-striped-columns">
-              <thead>
-                <tr>
-                  <th>Classificação</th>
-                  <th>Valor</th>
-                  <th>Descrição</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Almoço no restaurante</td>
-                  <td>Alimentação</td>
-                  <td>R$ 35,90</td>
-                </tr>
-                <tr>
-                  <td>Compra de supermercado</td>
-                  <td>Supermercado</td>
-                  <td>R$ 120,50</td>
-                </tr>
-                <tr>
-                  <td>Pagamento de transporte</td>
-                  <td>Transporte</td>
-                  <td>R$ 15,00</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- WaveSurfer.js CDN -->
-  <script src="https://unpkg.com/wavesurfer.js"></script>
-  <!-- Script JS principal -->
-  <script src="script.js"></script>
+        <!-- Ações: Gravar Áudio, Tirar Foto, Carregar Arquivo -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title mb-3">🎛 Captura de Informações</h4>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <button id="gravar-btn" class="btn btn-outline-primary w-100">🎙 Gravar Áudio</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button id="captura-foto-btn" class="btn btn-outline-success w-100">📸 Capturar Foto</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button id="carregar-btn" class="btn btn-outline-secondary w-100">📂 Carregar Arquivo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultado de Áudio/Imagem -->
+        <div id="cardResultado" class="card mb-4 collapse shadow-sm">
+            <div class="card-body">
+                <!-- Botões de controle de gravação -->
+                <div id="controles-gravacao" class="d-none mt-3 text-center">
+                    <button id="btn-enviar-gravacao" class="btn btn-success me-2">✅ Enviar</button>
+                    <button id="btn-cancelar-gravacao" class="btn btn-danger">❌ Cancelar</button>
+                </div>
+
+                <div id="waveform-container" class="collapse mb-3">
+                    <div id="waveform"></div>
+                </div>
+
+                <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none" />
+                <div id="resultado-audio-imagem" class="mt-3"></div>
+
+                <!-- Video e Canvas para captura da câmera -->
+                <video id="video" autoplay class="d-none rounded"></video>
+                <canvas id="canvas" class="d-none rounded"></canvas>
+
+                <div id="resultado-texto" class="mt-3 alert alert-light d-none"></div>
+
+                <div id="loading-spinner" class="d-none mt-3 text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="mt-2">Processando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consulta -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title mb-3">📊 Consultar Gastos por Período</h4>
+                <form id="consulta-form">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label for="data-inicio" class="form-label">Data Início</label>
+                            <input type="date" id="data-inicio" class="form-control" required />
+                        </div>
+                        <div class="col-md-5">
+                            <label for="data-fim" class="form-label">Data Fim</label>
+                            <input type="date" id="data-fim" class="form-control" required />
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-dark-blue w-100" type="submit">Consultar</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Tabela de Gastos -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">📊 Histórico de Gastos</h4>
+                        <table id="tabela-gastos" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Descrição</th>
+                                    <th>Data</th>
+                                    <th>Valor</th>
+                                    <th>Categoria</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Almoço no restaurante</td>
+                                    <td>2025-05-20</td>
+                                    <td>R$ 35,90</td>
+                                    <td>Alimentação</td>
+                                </tr>
+                                <tr>
+                                    <td>Transporte de ida</td>
+                                    <td>2025-05-21</td>
+                                    <td>R$ 12,50</td>
+                                    <td>Transporte</td>
+                                </tr>
+                                <tr>
+                                    <td>Compra de material de escritório</td>
+                                    <td>2025-05-22</td>
+                                    <td>R$ 45,00</td>
+                                    <td>Escritório</td>
+                                </tr>
+                                <tr>
+                                    <td>Jantar com amigos</td>
+                                    <td>2025-05-23</td>
+                                    <td>R$ 60,00</td>
+                                    <td>Alimentação</td>
+                                </tr>
+                                <tr>
+                                    <td>Uber para reunião</td>
+                                    <td>2025-05-24</td>
+                                    <td>R$ 25,00</td>
+                                    <td>Transporte</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scripts -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+            <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    $('#tabela-gastos').DataTable({
+                        paging: true,
+                        searching: true,
+                        ordering: true,
+                        language: {
+                            lengthMenu: "Mostrar _MENU_ registros por página",
+                            zeroRecords: "Nenhum registro encontrado",
+                            info: "Mostrando página _PAGE_ de _PAGES_",
+                            infoEmpty: "Nenhum registro disponível",
+                            infoFiltered: "(filtrado de _MAX_ registros no total)",
+                            search: "Pesquisar:",
+                            paginate: {
+                                first: "Primeira",
+                                last: "Última",
+                                next: "Próxima",
+                                previous: "Anterior"
+                            }
+                        }
+                    });
+                });
+                
+            </script>
 </body>
 
 </html>
