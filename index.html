@@ -1,95 +1,125 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Agente Fiananceiro</title>
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+    rel="stylesheet" />
   <style>
-    #cardResultado.show {
-      display: block !important;
-      animation: fadeIn 0.3s ease-in forwards;
+    body {
+      background-color: #E6F0FA;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    #waveform-container.show {
-      display: block !important;
-      animation: fadeIn 0.3s ease-in forwards;
+
+    .card {
+      border: none;
+      border-radius: 12px;
     }
-    #cardResultado, #waveform-container {
-      display: none;
+
+    .btn-dark-blue {
+      background-color: #2e3b4e;
+      border-color: #2e3b4e;
+      color: white;
+    }
+
+    .btn-dark-blue:hover {
+      background-color: #1a2533;
+      border-color: #1a2533;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus {
+      border-color: #2e3b4e;
+      box-shadow: 0 0 0 0.2rem rgba(46, 59, 78, 0.25);
     }
   </style>
 </head>
+
 <body class="p-3">
-  <div class="container">
-
-    <h1 class="mb-4">Agente financeiro Inteligente</h1>
-
-    <!-- Botões principais -->
-    <div class="mb-3">
-      <button id="gravar-btn" class="btn btn-primary me-2">🎙 Áudio</button>
-      <button id="captura-foto-btn" class="btn btn-secondary me-2">📷 Capturar Foto</button>
-      <button id="carregar-btn" class="btn btn-info">📁 Carregar Arquivo</button>
-      <input type="file" id="arquivo-input" accept="audio/*,image/*" hidden />
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h1 class="fw-bold">💼 RTX - Agente Financeiro com IA</h1>
+      <p class="text-muted fs-5">Gerencie seus gastos com inteligência</p>
     </div>
 
-    <!-- Controles gravação estilo WhatsApp -->
-    <div id="controles-gravacao" class="mt-3 d-none text-center">
-      <button id="btn-enviar-gravacao" class="btn btn-success me-2" disabled>✅ Enviar</button>
-      <button id="btn-cancelar-gravacao" class="btn btn-danger" disabled>❌ Cancelar</button>
-    </div>
-
-    <!-- Waveform -->
-    <div id="waveform-container" class="collapse mt-3">
-      <div id="waveform"></div>
-    </div>
-
-    <!-- Card resultado -->
-    <div
-      id="cardResultado"
-      class="alert alert-light mt-3 collapse"
-      role="alert"
-    >
-      <div id="resultado-texto" class="d-none"></div>
-      <div id="resultado-audio-imagem" class="d-none"></div>
-      <div id="resultado-consulta" class="d-none"></div>
-      <div id="loading-spinner" class="spinner-border text-primary d-none" role="status">
-        <span class="visually-hidden">Carregando...</span>
+    <!-- Descrição do Gasto -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title mb-3">📝 Nova Despesa</h4>
+        <form id="texto-form">
+          <div class="input-group mb-3">
+            <input type="text" id="descricao" name="descricao" class="form-control"
+              placeholder="Ex: Almoço no restaurante R$ 35,90" required />
+            <button type="submit" class="btn btn-dark-blue">Enviar</button>
+          </div>
+        </form>
+        <div id="resultado-texto" class="mt-3 alert alert-light d-none"></div>
       </div>
     </div>
 
-    <!-- Formulário descrição -->
-    <form id="texto-form" class="mt-4">
-      <div class="mb-3">
-        <label for="descricao" class="form-label">Descrição do gasto</label>
-        <input type="text" id="descricao" class="form-control" required />
-      </div>
-      <button type="submit" class="btn btn-success">Enviar Descrição</button>
-    </form>
-
-    <!-- Formulário consulta -->
-    <form id="consulta-form" class="mt-4">
-      <div class="row g-3 align-items-center">
-        <div class="col-auto">
-          <label for="data-inicio" class="col-form-label">Data Início</label>
-        </div>
-        <div class="col-auto">
-          <input type="date" id="data-inicio" class="form-control" required />
-        </div>
-        <div class="col-auto">
-          <label for="data-fim" class="col-form-label">Data Fim</label>
-        </div>
-        <div class="col-auto">
-          <input type="date" id="data-fim" class="form-control" required />
-        </div>
-        <div class="col-auto">
-          <button type="submit" class="btn btn-primary">Consultar Gastos</button>
+    <!-- Ações: Gravar Áudio, Tirar Foto, Carregar Arquivo -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title mb-3">🎛 Captura de Informações</h4>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <button id="gravar-btn" class="btn btn-outline-primary w-100">🎙 Gravar Áudio</button>
+          </div>
+          <div class="col-md-4">
+            <button id="captura-foto-btn" class="btn btn-outline-success w-100">📸 Capturar Foto</button>
+          </div>
+          <div class="col-md-4">
+            <button id="carregar-btn" class="btn btn-outline-secondary w-100">📂 Carregar Arquivo</button>
+          </div>
         </div>
       </div>
-    </form>
+    </div>
 
+    <!-- Resultado de Áudio/Imagem -->
+    <div id="cardResultado" class="card mb-4 collapse shadow-sm">
+      <div class="card-body">
+        <div id="waveform-container" class="collapse mb-3">
+          <div id="waveform"></div>
+        </div>
+
+        <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none" />
+        <div id="resultado-audio-imagem" class="mt-3"></div>
+
+        <video id="video" width="100%" height="240" autoplay class="d-none rounded"></video>
+        <canvas id="canvas" width="100%" height="240" class="d-none rounded"></canvas>
+
+        <div id="loading-spinner" class="d-none mt-3 text-center">
+          <div class="spinner-border text-primary" role="status"></div>
+          <div class="mt-2">Processando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consulta -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title mb-3">📊 Consultar Gastos por Período</h4>
+        <form id="consulta-form">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+              <label for="data-inicio" class="form-label">Data Início</label>
+              <input type="date" id="data-inicio" class="form-control" required />
+            </div>
+            <div class="col-md-5">
+              <label for="data-fim" class="form-label">Data Fim</label>
+              <input type="date" id="data-fim" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-dark-blue w-100" type="submit">Consultar</button>
+            </div>
+          </div>
+        </form>
+        <div id="resultado-consulta" class="mt-4"></div>
+      </div>
+    </div>
   </div>
 
   <!-- WaveSurfer.js CDN -->
@@ -97,4 +127,5 @@
   <!-- Seu script -->
   <script src="script.js"></script>
 </body>
+
 </html>
