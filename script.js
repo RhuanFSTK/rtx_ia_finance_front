@@ -19,7 +19,6 @@ async function iniciarCamera() {
         facingMode: 'environment', // 'user' para câmera frontal
         width: { ideal: 640 },
         height: { ideal: 480 },
-        // Foco automático é algo que depende da câmera e navegador
       }
     };
 
@@ -126,10 +125,9 @@ document.getElementById('captura-foto-btn').addEventListener('click', async () =
 
 
 // ==================
-// Restante do seu código (exemplo, pode ser adaptado conforme necessidade)
+// Formulário de descrição de gasto
 // ==================
 
-// Formulário de descrição de gasto (exemplo simples de envio)
 document.getElementById('texto-form').addEventListener('submit', e => {
   e.preventDefault();
   const descricao = document.getElementById('descricao').value.trim();
@@ -140,7 +138,7 @@ document.getElementById('texto-form').addEventListener('submit', e => {
   e.target.reset();
 });
 
-// Formulário de consulta de gastos por período (exemplo)
+// Formulário de consulta de gastos por período
 document.getElementById('consulta-form').addEventListener('submit', e => {
   e.preventDefault();
   const inicio = document.getElementById('data-inicio').value;
