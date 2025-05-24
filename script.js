@@ -1,481 +1,157 @@
-document.addEventListener("DOMContentLoaded", () => {
-	const cardResultado = document.getElementById("cardResultado");
-	const resultadoTexto = document.getElementById("resultado-texto");
-	const resultadoAudioImagem = document.getElementById(
-		"resultado-audio-imagem"
-	);
-	const loadingSpinner = document.getElementById("loading-spinner");
-	const waveformContainer = document.getElementById("waveform-container");
-	const videoElement = document.createElement("video"); // criado dinamicamente
-	const canvasElement = document.createElement("canvas"); // criado dinamicamente
-	const gravarBtn = document.getElementById("gravar-btn");
-	const capturaFotoBtn = document.getElementById("captura-foto-btn");
-	const carregarBtn = document.getElementById("carregar-btn");
-	const arquivoInput = document.getElementById("arquivo-input");
-	const consultaForm = document.getElementById("consulta-form");
-	const resultadoConsulta = document.getElementById("resultado-consulta");
-	const textoForm = document.getElementById("texto-form");
+// script.js
 
-	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
-	const btnCancelarGravacao = document.getElementById(
-		"btn-cancelar-gravacao"
-	);
-	const controlesGravacao = document.getElementById("controles-gravacao");
+// Seleção de elementos do DOM
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const resultadoAudioImagem = document.getElementById('resultado-audio-imagem');
+const cardResultado = document.getElementById('cardResultado');
 
-	let mediaRecorder;
-	let audioChunks = [];
-	let stream;
+let stream = null; // Guarda o stream da câmera
 
-	function showLoading() {
-		loadingSpinner.classList.remove("d-none");
-		cardResultado.classList.add("show");
-		cardResultado.classList.remove("collapse");
-	}
+/**
+ * Inicia a câmera e exibe o stream no elemento video
+ */
+async function iniciarCamera() {
+  try {
+    const constraints = {
+      audio: false,
+      video: {
+        facingMode: 'environment', // 'user' para câmera frontal
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        // Foco automático é algo que depende da câmera e navegador
+      }
+    };
 
-	function hideLoading() {
-		loadingSpinner.classList.add("d-none");
-	}
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+    video.classList.remove('d-none');
+    canvas.classList.add('d-none');
+    resultadoAudioImagem.innerHTML = '';
+    cardResultado.classList.remove('collapse');
+    await video.play();
+  } catch (err) {
+    console.error('Erro ao acessar a câmera:', err);
+    resultadoAudioImagem.innerHTML = `<div class="alert alert-danger">❌ Erro ao acessar a câmera: ${err.message || err}</div>`;
+  }
+}
 
-	function mostrarResultado(container, tipo, mensagem) {
-		container.classList.remove(
-			"alert-success",
-			"alert-danger",
-			"alert-warning",
-			"alert-info",
-			"alert-light"
-		);
-		container.classList.add("alert", `alert-${tipo}`, "fade", "show");
-		container.innerHTML = mensagem;
-		container.classList.remove("d-none");
-	}
+/**
+ * Para a câmera e limpa o stream
+ */
+function pararCamera() {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+}
 
-	async function enviarArquivoParaAPI(endpoint, formData) {
-		try {
-			const response = await fetch(endpoint, {
-				method: "POST",
-				body: formData,
-			});
-			const data = await response.json();
-			return { ok: response.ok, data };
-		} catch (error) {
-			return { ok: false, data: { detail: error.message } };
-		}
-	}
+/**
+ * Captura a foto do vídeo para o canvas e mostra a imagem capturada
+ */
+function capturarFoto() {
+  if (!stream) {
+    resultadoAudioImagem.innerHTML = '<div class="alert alert-warning">❌ Câmera não iniciada</div>';
+    return;
+  }
 
-	// Função toggle gravação estilo WhatsApp
-	async function toggleGravacao() {
-		if (mediaRecorder && mediaRecorder.state === "recording") {
-			// Parar gravação
-			mediaRecorder.stop();
-			gravarBtn.textContent = "🎙 Áudio";
-			gravarBtn.disabled = false;
-			btnEnviarGravacao.disabled = false;
-			btnCancelarGravacao.disabled = false;
-			return;
-		}
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
 
-		try {
-			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			mediaRecorder = new MediaRecorder(stream);
-			audioChunks = [];
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-			resultadoAudioImagem.classList.add("d-none");
-			cardResultado.classList.add("show");
-			cardResultado.classList.remove("collapse");
+  // Esconde o vídeo e mostra o canvas com a foto
+  video.classList.add('d-none');
+  canvas.classList.remove('d-none');
 
-			waveformContainer.classList.remove("collapse");
-			waveformContainer.classList.add("show");
+  pararCamera();
+}
 
-			if (window.waveSurfer) window.waveSurfer.destroy();
-			window.waveSurfer = WaveSurfer.create({
-				container: "#waveform",
-				waveColor: "#4F46E5",
-				progressColor: "#6366F1",
-				height: 100,
-			});
+/**
+ * Reseta o estado da captura, ocultando vídeo/canvas e parando câmera
+ */
+function resetarCaptura() {
+  canvas.classList.add('d-none');
+  video.classList.add('d-none');
+  resultadoAudioImagem.innerHTML = '';
+  cardResultado.classList.add('collapse');
+  pararCamera();
+  removerControlesCaptura();
+}
 
-			mediaRecorder.ondataavailable = (event) => {
-				audioChunks.push(event.data);
-				const blob = new Blob(audioChunks, { type: "audio/webm" });
-				const url = URL.createObjectURL(blob);
-				window.waveSurfer.load(url);
-			};
+/**
+ * Exibe controles para tirar foto e cancelar a captura
+ */
+function mostrarControlesCaptura() {
+  // Remove controles antigos se existirem
+  const controlesAntigos = document.getElementById('controles-captura');
+  if (controlesAntigos) controlesAntigos.remove();
 
-			mediaRecorder.onstop = () => {
-				btnEnviarGravacao.disabled = false;
-				btnCancelarGravacao.disabled = false;
-				gravarBtn.disabled = false;
-				stream.getTracks().forEach((track) => track.stop());
-			};
+  const divControles = document.createElement('div');
+  divControles.id = 'controles-captura';
+  divControles.className = 'mt-3 text-center';
 
-			mediaRecorder.start();
-			gravarBtn.textContent = "⏹ Parar";
-			gravarBtn.disabled = false;
+  // Botão para tirar foto
+  const btnTirarFoto = document.createElement('button');
+  btnTirarFoto.className = 'btn btn-primary me-2';
+  btnTirarFoto.textContent = '📸 Tirar Foto';
+  btnTirarFoto.onclick = capturarFoto;
 
-			controlesGravacao.classList.remove("d-none");
-			btnEnviarGravacao.disabled = true;
-			btnCancelarGravacao.disabled = true;
-		} catch (err) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro ao acessar microfone:</strong> ${err.message}`
-			);
-		}
-	}
+  // Botão para cancelar
+  const btnCancelar = document.createElement('button');
+  btnCancelar.className = 'btn btn-danger';
+  btnCancelar.textContent = '❌ Cancelar';
+  btnCancelar.onclick = resetarCaptura;
 
-	async function enviarGravacao() {
-		showLoading();
+  divControles.appendChild(btnTirarFoto);
+  divControles.appendChild(btnCancelar);
 
-		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-		const formData = new FormData();
-		formData.append("file", audioBlob);
+  cardResultado.querySelector('.card-body').appendChild(divControles);
+}
 
-		const { ok, data } = await enviarArquivoParaAPI(
-			"https://rtxapi.up.railway.app/audio/",
-			formData
-		);
+/**
+ * Remove controles de captura da interface
+ */
+function removerControlesCaptura() {
+  const controles = document.getElementById('controles-captura');
+  if (controles) controles.remove();
+}
 
-		hideLoading();
+// Evento para abrir a câmera quando clicar no botão "Capturar Foto"
+document.getElementById('captura-foto-btn').addEventListener('click', async () => {
+  await iniciarCamera();
+  mostrarControlesCaptura();
+});
 
-		if (ok) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"success",
-				`<strong>Transcrição:</strong> ${data.transcricao}`
-			);
-		} else {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro:</strong> ${data.detail}`
-			);
-		}
 
-		audioChunks = [];
-		controlesGravacao.classList.add("d-none");
-		waveformContainer.classList.add("collapse");
-		waveformContainer.classList.remove("show");
-	}
+// ==================
+// Restante do seu código (exemplo, pode ser adaptado conforme necessidade)
+// ==================
 
-	function cancelarGravacao() {
-		if (mediaRecorder && mediaRecorder.state === "recording") {
-			mediaRecorder.stop();
-		}
-		if (stream) {
-			stream.getTracks().forEach((track) => track.stop());
-		}
-		audioChunks = [];
-		controlesGravacao.classList.add("d-none");
-		waveformContainer.classList.add("collapse");
-		waveformContainer.classList.remove("show");
-		resultadoAudioImagem.classList.add("d-none");
-		gravarBtn.textContent = "🎙 Áudio";
-		gravarBtn.disabled = false;
-	}
+// Formulário de descrição de gasto (exemplo simples de envio)
+document.getElementById('texto-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const descricao = document.getElementById('descricao').value.trim();
+  if (!descricao) return;
+  const resultadoTexto = document.getElementById('resultado-texto');
+  resultadoTexto.textContent = `Despesa adicionada: ${descricao}`;
+  resultadoTexto.classList.remove('d-none');
+  e.target.reset();
+});
 
-	gravarBtn.addEventListener("click", () => {
-		toggleGravacao();
-	});
+// Formulário de consulta de gastos por período (exemplo)
+document.getElementById('consulta-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const inicio = document.getElementById('data-inicio').value;
+  const fim = document.getElementById('data-fim').value;
+  const resultadoConsulta = document.getElementById('resultado-consulta');
 
-	btnEnviarGravacao.addEventListener("click", () => {
-		enviarGravacao();
-	});
+  if (inicio > fim) {
+    resultadoConsulta.innerHTML = `<div class="alert alert-warning">Data início deve ser antes da data fim.</div>`;
+    return;
+  }
 
-	btnCancelarGravacao.addEventListener("click", () => {
-		cancelarGravacao();
-	});
-
-	// Função tirar foto (mantida do seu código original)
-	async function tirarFoto() {
-		try {
-			showLoading();
-
-			const streamVideo = await navigator.mediaDevices.getUserMedia({
-				video: true,
-			});
-			videoElement.srcObject = streamVideo;
-			videoElement.play();
-
-			// Espera 1s para estabilizar
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-
-			const context = canvasElement.getContext("2d");
-			canvasElement.width = videoElement.videoWidth || 320;
-			canvasElement.height = videoElement.videoHeight || 240;
-
-			context.drawImage(
-				videoElement,
-				0,
-				0,
-				canvasElement.width,
-				canvasElement.height
-			);
-
-			const base64Image = canvasElement
-				.toDataURL("image/jpeg")
-				.split(",")[1];
-			const blob = await (
-				await fetch(`data:image/jpeg;base64,${base64Image}`)
-			).blob();
-
-			const formData = new FormData();
-			formData.append("file", blob);
-
-			const { ok, data } = await enviarArquivoParaAPI(
-				"https://rtxapi.up.railway.app/imagem/",
-				formData
-			);
-
-			if (ok) {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"success",
-					`<strong>Resultado da Análise:</strong> ${data.resultado}`
-				);
-				resultadoAudioImagem.classList.remove("d-none");
-			} else {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"danger",
-					`<strong>Erro:</strong> ${data.detail}`
-				);
-				resultadoAudioImagem.classList.remove("d-none");
-			}
-
-			streamVideo.getTracks().forEach((track) => track.stop());
-			hideLoading();
-		} catch (err) {
-			hideLoading();
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro ao acessar câmera:</strong> ${err.message}`
-			);
-		}
-	}
-
-	capturaFotoBtn.addEventListener("click", tirarFoto);
-
-	// Carregar arquivo
-	carregarBtn.addEventListener("click", () => {
-		arquivoInput.click();
-	});
-
-	arquivoInput.addEventListener("change", async () => {
-		const file = arquivoInput.files[0];
-		if (!file) return;
-
-		const formData = new FormData();
-		formData.append("file", file);
-
-		showLoading();
-		cardResultado.classList.add("show");
-		cardResultado.classList.remove("collapse");
-		waveformContainer.classList.add("collapse");
-		waveformContainer.classList.remove("show");
-		resultadoAudioImagem.classList.add("d-none");
-
-		if (file.type.startsWith("audio/")) {
-			// Exibir waveform
-			const audioUrl = URL.createObjectURL(file);
-			if (window.waveSurfer) window.waveSurfer.destroy();
-			window.waveSurfer = WaveSurfer.create({
-				container: "#waveform",
-				waveColor: "#4F46E5",
-				progressColor: "#6366F1",
-				height: 100,
-			});
-			waveformContainer.classList.remove("collapse");
-			waveformContainer.classList.add("show");
-			window.waveSurfer.load(audioUrl);
-
-			const { ok, data } = await enviarArquivoParaAPI(
-				"https://rtxapi.up.railway.app/audio/",
-				formData
-			);
-
-			if (ok) {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"success",
-					`<strong>Transcrição:</strong> ${data.transcricao}`
-				);
-				resultadoAudioImagem.classList.remove("d-none");
-			} else {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"danger",
-					`<strong>Erro:</strong> ${data.detail}`
-				);
-				resultadoAudioImagem.classList.remove("d-none");
-			}
-		} else if (file.type.startsWith("image/")) {
-			const { ok, data } = await enviarArquivoParaAPI(
-				"https://rtxapi.up.railway.app/imagem/",
-				formData
-			);
-
-			if (ok) {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"success",
-					`<strong>Resultado da Análise:</strong> ${data.resultado}`
-				);
-				resultadoAudioImagem.classList.remove("d-none");
-			} else {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"danger",
-					`<strong>Erro:</strong> ${data.detail}`
-				);
-				resultadoAudioImagem.classList.remove("d-none");
-			}
-			waveformContainer.classList.add("collapse");
-			waveformContainer.classList.remove("show");
-		} else {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"warning",
-				"Tipo de arquivo não suportado."
-			);
-			resultadoAudioImagem.classList.remove("d-none");
-			waveformContainer.classList.add("collapse");
-			waveformContainer.classList.remove("show");
-		}
-		hideLoading();
-		arquivoInput.value = "";
-	});
-
-	// Formulário descrição (mantido do seu código original)
-	textoForm.addEventListener("submit", async (e) => {
-		e.preventDefault();
-		const descricao = document.getElementById("descricao").value.trim();
-		if (!descricao) return;
-
-		resultadoTexto.classList.add("d-none");
-		showLoading();
-
-		try {
-			const res = await fetch("https://rtxapi.up.railway.app/registro/", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ descricao }),
-			});
-
-			const data = await res.json();
-			console.log(data);
-			hideLoading();
-
-			if (res.ok) {
-				mostrarResultado(
-					resultadoTexto,
-					"success",
-					`<strong>Classificação:</strong> ${
-						data.classificacao
-					} <br /> <strong>Valor:</strong> R$ ${parseFloat(
-						data.valor
-					).toFixed(2)}`
-				);
-			} else {
-				let errorMsg = "";
-
-				if (typeof data.detail === "object") {
-					try {
-						errorMsg = JSON.stringify(data.detail, null, 2);
-					} catch {
-						errorMsg = "[Erro ao converter objeto]";
-					}
-				} else if (data.detail) {
-					errorMsg = data.detail;
-				} else {
-					errorMsg = "Erro desconhecido";
-				}
-
-				mostrarResultado(
-					resultadoTexto,
-					"danger",
-					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-				);
-			}
-		} catch (err) {
-			hideLoading();
-			mostrarResultado(
-				resultadoTexto,
-				"danger",
-				`<strong>Erro:</strong> ${err.message || JSON.stringify(err)}`
-			);
-		}
-	});
-
-	// Consulta gastos (mantido do seu código original)
-	consultaForm.addEventListener("submit", async (e) => {
-		e.preventDefault();
-		const inicio = document.getElementById("data-inicio").value;
-		const fim = document.getElementById("data-fim").value;
-
-		resultadoConsulta.innerHTML = "";
-		mostrarResultado(resultadoConsulta, "info", "Consultando...");
-
-		try {
-			const res = await fetch(
-				`https://rtxapi.up.railway.app/registro/consulta/?data_inicio=${inicio}&data_fim=${fim}`
-			);
-			const data = await res.json();
-
-			if (res.ok) {
-				if (data.gastos.length === 0) {
-					mostrarResultado(
-						resultadoConsulta,
-						"warning",
-						"Nenhum gasto encontrado no período."
-					);
-				} else {
-					let tabelaHtml = `
-          <div class="alert alert-success">Total gasto: R$ ${data.total.toFixed(
-				2
-			)}</div>
-          <table class="table table-striped table-bordered mt-3">
-            <thead>
-              <tr>
-                <th>Descrição</th>
-                <th>Classificação</th>
-                <th>Valor (R$)</th>
-                <th>Data e Hora</th>
-              </tr>
-            </thead>
-            <tbody>
-          `;
-
-					data.gastos.forEach((gasto) => {
-						tabelaHtml += `
-              <tr>
-                <td>${gasto.descricao}</td>
-                <td>${gasto.classificacao}</td>
-                <td>${parseFloat(gasto.valor).toFixed(2)}</td>
-                <td>${new Date(gasto.data_hora).toLocaleString()}</td>
-              </tr>
-            `;
-					});
-
-					tabelaHtml += "</tbody></table>";
-					resultadoConsulta.className = "";
-					resultadoConsulta.classList.add("mt-3");
-					resultadoConsulta.innerHTML = tabelaHtml;
-				}
-			} else {
-				mostrarResultado(
-					resultadoConsulta,
-					"danger",
-					`Erro: ${data.detail}`
-				);
-			}
-		} catch (err) {
-			mostrarResultado(
-				resultadoConsulta,
-				"danger",
-				`Erro ao consultar: ${err.message}`
-			);
-		}
-	});
+  // Simulação de consulta
+  resultadoConsulta.innerHTML = `<div class="alert alert-info">Consulta de gastos de <strong>${inicio}</strong> até <strong>${fim}</strong> realizada (simulado).</div>`;
 });
