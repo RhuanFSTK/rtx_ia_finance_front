@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 
 			const data = await res.json();
-			alert(data)
+			console.log(data)
 			hideLoading();
 
 			if (res.ok) {
