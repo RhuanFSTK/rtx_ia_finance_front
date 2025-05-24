@@ -22,22 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	let audioChunks = [];
 	let stream;
 
-	const inputInicio = document.getElementById("data-inicio");
-	const inputFim = document.getElementById("data-fim");
-
-	const hoje = new Date();
-	const umMesAtras = new Date();
-	
-	umMesAtras.setMonth(hoje.getMonth() - 1);
-
-	// Corrige meses com menos dias (ex: 31 de março -> 28 de fevereiro)
-	if (umMesAtras.getDate() !== hoje.getDate()) {
-		umMesAtras.setDate(0); // último dia do mês anterior
-	}
-
-	inputInicio.value = umMesAtras.toISOString().split("T")[0];
-	inputFim.value = hoje.toISOString().split("T")[0];
-
 	function showLoading() {
 		loadingSpinner.classList.remove("d-none");
 		cardResultado.classList.add("show");
@@ -144,9 +128,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					stream.getTracks().forEach((track) => track.stop());
 				}
 
-				// Aqui criamos o player para o usuário ouvir o áudio
+				// Aqui chama para mostrar o player e deixar ouvir o áudio antes de enviar
 				tocarAudioLocal();
 			};
+
 
 			mediaRecorder.start();
 			gravarBtn.textContent = "⏹ Parar";
@@ -197,24 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		controlesGravacao.classList.add("d-none");
 		waveformContainer.classList.add("collapse");
 		waveformContainer.classList.remove("show");
-		resultadoAudioImagem.classList.add("d-none");
 	}
 
-	function tocarAudioLocal() {
-		if (audioChunks.length === 0) return;
-
-		const blob = new Blob(audioChunks, { type: "audio/webm" });
-		const audioURL = URL.createObjectURL(blob);
-
-		const audioElement = document.createElement("audio");
-		audioElement.controls = true;
-		audioElement.src = audioURL;
-
-		// Mostra no container de resultado para usuário ouvir
-		resultadoAudioImagem.innerHTML = ""; // limpa o que tinha antes
-		resultadoAudioImagem.appendChild(audioElement);
-		resultadoAudioImagem.classList.remove("d-none");
-	}
 
 	function cancelarGravacao() {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
