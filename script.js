@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 
 			const data = await res.json();
-			console.log(data)
+			console.log(data);
 			hideLoading();
 
 			if (res.ok) {
@@ -378,14 +378,24 @@ document.addEventListener("DOMContentLoaded", () => {
 					).toFixed(2)}`
 				);
 			} else {
+				let errorMsg = "";
+
+				if (typeof data.detail === "object") {
+					try {
+						errorMsg = JSON.stringify(data.detail, null, 2);
+					} catch {
+						errorMsg = "[Erro ao converter objeto]";
+					}
+				} else if (data.detail) {
+					errorMsg = data.detail;
+				} else {
+					errorMsg = "Erro desconhecido";
+				}
+
 				mostrarResultado(
 					resultadoTexto,
 					"danger",
-					`<strong>Erro:</strong> ${
-						typeof data.detail === "object"
-							? JSON.stringify(data.detail)
-							: data.detail
-					}`
+					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
 				);
 			}
 		} catch (err) {
