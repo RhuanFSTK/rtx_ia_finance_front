@@ -22,6 +22,22 @@ document.addEventListener("DOMContentLoaded", () => {
 	let audioChunks = [];
 	let stream;
 
+	const inputInicio = document.getElementById("data-inicio");
+	const inputFim = document.getElementById("data-fim");
+
+	const hoje = new Date();
+	const umMesAtras = new Date();
+	
+	umMesAtras.setMonth(hoje.getMonth() - 1);
+
+	// Corrige meses com menos dias (ex: 31 de março -> 28 de fevereiro)
+	if (umMesAtras.getDate() !== hoje.getDate()) {
+		umMesAtras.setDate(0); // último dia do mês anterior
+	}
+
+	inputInicio.value = umMesAtras.toISOString().split("T")[0];
+	inputFim.value = hoje.toISOString().split("T")[0];
+
 	function showLoading() {
 		loadingSpinner.classList.remove("d-none");
 		cardResultado.classList.add("show");
@@ -208,15 +224,20 @@ document.addEventListener("DOMContentLoaded", () => {
 			const streamVideo = await navigator.mediaDevices.getUserMedia({
 				video: true,
 			});
+			videoElement.srcObject = null; // Limpa o stream de vídeo
 			videoElement.srcObject = streamVideo;
 			videoElement.play();
 
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			const context = canvasElement.getContext("2d");
+			
 			canvasElement.width = videoElement.videoWidth || 320;
 			canvasElement.height = videoElement.videoHeight || 240;
 
+			videoElement.classList.remove("d-none");
+			canvasElement.classList.remove("d-none");
+			
 			context.drawImage(
 				videoElement,
 				0,
@@ -228,6 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const base64Image = canvasElement.toDataURL("image/jpeg").split(",")[1];
 			const blob = await (await fetch(`data:image/jpeg;base64,${base64Image}`)).blob();
 
+
 			const formData = new FormData();
 			formData.append("file", blob);
 
@@ -235,6 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				"https://rtxapi.up.railway.app/imagem/",
 				formData
 			);
+
 
 			if (ok) {
 				mostrarResultado(
@@ -348,6 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	btnEnviarGravacao.addEventListener("click", enviarGravacao);
 	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
 	capturaFotoBtn.addEventListener("click", tirarFoto);
-	carregarBtn.addEventListener("click", carregarArquivo);
+	carregarBtn.addEventListener("click", () => {
+		arquivoInput.click();
+	});
+	arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 });
