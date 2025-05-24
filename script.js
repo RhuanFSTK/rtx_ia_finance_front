@@ -44,10 +44,23 @@ document.addEventListener("DOMContentLoaded", () => {
 				const formData = new FormData();
 				formData.append("file", audioBlob);
 
+				// Visualização com WaveSurfer
+				const audioUrl = URL.createObjectURL(audioBlob);
+
+				if (window.waveSurfer) waveSurfer.destroy(); // Limpa se já existe
+				window.waveSurfer = WaveSurfer.create({
+					container: "#waveform",
+					waveColor: "#4F46E5",
+					progressColor: "#6366F1",
+					height: 100,
+				});
+				waveSurfer.load(audioUrl);
+
 				const { ok, data } = await enviarArquivoParaAPI(
 					"https://rtxapi.up.railway.app/audio/",
 					formData
 				);
+
 				resultadoAudioImagem.classList.remove("d-none");
 
 				if (ok) {
