@@ -75,16 +75,16 @@
             <button id="carregar-btn" class="btn btn-outline-secondary w-100">📂 Arquivo</button>
           </div>
         </div>
-
-        <!-- Visualização do waveform -->
-        <div class="mt-4">
-          <div id="waveform"></div>
-        </div>
       </div>
     </div>
 
     <!-- Resultado de Áudio/Imagem -->
-    <div class="card mb-4">
+    <div class="card mb-4 d-none">
+      <!-- Visualização do waveform -->
+      <div class="mt-4 d-none">
+        <div id="waveform"></div>
+      </div>
+
       <div class="card-body">
         <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none">
         <div id="resultado-audio-imagem" class="mt-3 alert alert-light d-none"></div>

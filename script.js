@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+	const cardResultado = document.getElementById("cardResultado");
 	const resultadoTexto = document.getElementById("resultado-texto");
 	const resultadoAudioImagem = document.getElementById("resultado-audio-imagem");
 	const gravarBtn = document.getElementById("gravar-btn");
@@ -27,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Grava e envia áudio
 	async function gravarAudio() {
 		try {
+			cardResultado.classList.remove("d-none");
 			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 			mediaRecorder = new MediaRecorder(stream);
 			audioChunks = [];
@@ -76,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Captura de imagem e envio
 	async function tirarFoto() {
 		try {
+			cardResultado.classList.remove("d-none");
 			const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 			videoElement.srcObject = stream;
 			videoElement.classList.remove("d-none");
