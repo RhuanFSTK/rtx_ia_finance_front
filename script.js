@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const resultadoTexto = document.getElementById("resultado-texto");
-	const resultadoAudioImagem = document.getElementById(
-		"resultado-audio-imagem"
-	);
+	const resultadoAudioImagem = document.getElementById("resultado-audio-imagem");
 	const gravarBtn = document.getElementById("gravar-btn");
 	const carregarBtn = document.getElementById("carregar-btn");
 	const capturaFotoBtn = document.getElementById("captura-foto-btn");
@@ -26,12 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// 1. Gravar Áudio
+	// Grava e envia áudio
 	async function gravarAudio() {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				audio: true,
-			});
+			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 			mediaRecorder = new MediaRecorder(stream);
 			audioChunks = [];
 
@@ -44,27 +40,26 @@ document.addEventListener("DOMContentLoaded", () => {
 				const formData = new FormData();
 				formData.append("file", audioBlob);
 
-				// Visualização com WaveSurfer
+				// Waveform
 				const audioUrl = URL.createObjectURL(audioBlob);
-
-				if (window.waveSurfer) waveSurfer.destroy(); // Limpa se já existe
+				if (window.waveSurfer) window.waveSurfer.destroy();
 				window.waveSurfer = WaveSurfer.create({
 					container: "#waveform",
 					waveColor: "#4F46E5",
 					progressColor: "#6366F1",
 					height: 100,
 				});
-				waveSurfer.load(audioUrl);
+				window.waveSurfer.load(audioUrl);
 
+				// Envio para API
 				const { ok, data } = await enviarArquivoParaAPI(
 					"https://rtxapi.up.railway.app/audio/",
 					formData
 				);
 
 				resultadoAudioImagem.classList.remove("d-none");
-
 				if (ok) {
-					resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
+					resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.transcricao}</p>`;
 				} else {
 					resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
 				}
@@ -78,31 +73,20 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// 2. Tirar Foto
+	// Captura de imagem e envio
 	async function tirarFoto() {
-		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: true,
-			});
+		try {
+			const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 			videoElement.srcObject = stream;
-			videoElement.style.display = "block";
+			videoElement.classList.remove("d-none");
 
 			setTimeout(async () => {
 				const context = canvasElement.getContext("2d");
-				context.drawImage(
-					videoElement,
-					0,
-					0,
-					canvasElement.width,
-					canvasElement.height
-				);
+				canvasElement.classList.remove("d-none");
+				context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
 
-				const base64Image = canvasElement
-					.toDataURL("image/jpeg")
-					.split(",")[1];
-				const blob = await (
-					await fetch(`data:image/jpeg;base64,${base64Image}`)
-				).blob();
+				const base64Image = canvasElement.toDataURL("image/jpeg").split(",")[1];
+				const blob = await (await fetch(`data:image/jpeg;base64,${base64Image}`)).blob();
 				const formData = new FormData();
 				formData.append("file", blob);
 
@@ -110,8 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					"https://rtxapi.up.railway.app/imagem/",
 					formData
 				);
-				resultadoAudioImagem.classList.remove("d-none");
 
+				resultadoAudioImagem.classList.remove("d-none");
 				if (ok) {
 					resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
 				} else {
@@ -119,14 +103,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 
 				stream.getTracks().forEach((track) => track.stop());
-				videoElement.style.display = "none";
+				videoElement.classList.add("d-none");
 			}, 1000);
-		} else {
-			alert("Câmera não suportada neste dispositivo.");
+		} catch (err) {
+			alert("Erro ao acessar a câmera: " + err.message);
 		}
 	}
 
-	// 3. Carregar Arquivo (imagem ou áudio)
+	// Upload de arquivo
 	async function carregarArquivo(file) {
 		const formData = new FormData();
 		formData.append("file", file);
@@ -147,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (ok) {
 			if (endpoint.includes("audio")) {
-				resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
+				resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.transcricao}</p>`;
 			} else {
 				resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
 			}
@@ -156,17 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// Eventos
-	gravarBtn.addEventListener("click", gravarAudio);
-	capturaFotoBtn.addEventListener("click", tirarFoto);
-	carregarBtn.addEventListener("click", () => arquivoInput.click());
-
-	arquivoInput.addEventListener("change", async () => {
-		const file = arquivoInput.files[0];
-		if (file) await carregarArquivo(file);
-	});
-
-	// Enviar texto para classificar
+	// Enviar descrição de gasto
 	const textoForm = document.getElementById("texto-form");
 	textoForm.addEventListener("submit", async (e) => {
 		e.preventDefault();
@@ -197,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-	// Consultar gastos
+	// Consulta por período
 	const consultaForm = document.getElementById("consulta-form");
 	const resultadoConsulta = document.getElementById("resultado-consulta");
 
@@ -233,5 +207,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		} catch (err) {
 			resultadoConsulta.innerHTML = `<div class="alert alert-danger">Erro ao consultar gastos: ${err.message}</div>`;
 		}
+	});
+
+	// Eventos de clique
+	gravarBtn.addEventListener("click", gravarAudio);
+	capturaFotoBtn.addEventListener("click", tirarFoto);
+	carregarBtn.addEventListener("click", () => arquivoInput.click());
+
+	arquivoInput.addEventListener("change", async () => {
+		const file = arquivoInput.files[0];
+		if (file) await carregarArquivo(file);
 	});
 });
