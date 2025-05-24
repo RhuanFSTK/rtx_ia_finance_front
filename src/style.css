@@ -1,0 +1,98 @@
+/* Base */
+body {
+    background-color: #E6F0FA;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Cartões */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Botão personalizado */
+.btn-dark-blue {
+    background-color: #2e3b4e;
+    border-color: #2e3b4e;
+    color: white;
+}
+
+.btn-dark-blue:hover {
+    background-color: #1a2533;
+    border-color: #1a2533;
+}
+
+/* Campos de texto com foco */
+input[type="text"]:focus,
+input[type="date"]:focus {
+    border-color: #2e3b4e;
+    box-shadow: 0 0 0 0.2rem rgba(46, 59, 78, 0.25);
+}
+
+/* Elementos de vídeo e canvas */
+#video,
+#canvas {
+    width: 100%;
+    height: 240px;
+    border-radius: 12px;
+    object-fit: cover;
+    background-color: black;
+}
+
+/* Tabela de consulta */
+.table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    text-align: center;
+}
+
+.table th {
+    background-color: #2e3b4e;
+    color: white;
+}
+
+.table td {
+    font-weight: 600;
+}
+
+/* Estilo responsivo para dispositivos menores */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .card {
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    h1, h2, h3 {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+    .table th,
+    .table td {
+        font-size: 0.85rem;
+        padding: 8px;
+    }
+
+    #video,
+    #canvas {
+        height: 180px;
+    }
+
+    .btn,
+    input,
+    select,
+    textarea {
+        font-size: 1rem !important;
+    }
+}
