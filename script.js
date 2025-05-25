@@ -112,7 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 
 		hideLoading();
-		cardResultado.classList.add("d-none");
+		resetGravacao();
+		
 		document.getElementById("descricao").value = "";
 
 		if (ok && data.response) {
@@ -137,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			btnEnviar.disabled = false; // ✅ Reativa o botão
 		}
-		location.reload();
 	}
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
@@ -304,6 +304,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		resetGravacao();
+	}
+
+	// Reset estado da gravação após envio
+	function resetGravacao() { 
+		audioChunks = [];
+		controlesGravacao.classList.add("d-none");
+		resultadoAudioImagem.classList.add("d-none");
+		gravarBtn.textContent = "🎙 Gravar Áudio";
+		gravarBtn.disabled = false;
 
 		// Reset wavesurfer (libera recursos e reinicia)
 		if (window.waveSurfer) {
@@ -316,15 +325,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		stream = null;
 	}
 
-	// Reset estado da gravação após envio
-	function resetGravacao() { 
-		audioChunks = [];
-		controlesGravacao.classList.add("d-none");
-		resultadoAudioImagem.classList.add("d-none");
-		gravarBtn.textContent = "🎙 Gravar Áudio";
-		gravarBtn.disabled = false;
-	}
-
 	// Cancela a gravação atual e limpa a UI relacionada
 	function cancelarGravacao() {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
@@ -333,12 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (stream) {
 			stream.getTracks().forEach((track) => track.stop());
 		}
-		audioChunks = [];
-		controlesGravacao.classList.add("d-none");
-		waveformContainer.classList.add("collapse");
-		resultadoAudioImagem.classList.add("d-none");
-		gravarBtn.textContent = "🎙 Gravar Áudio";
-		gravarBtn.disabled = false;
+		resetGravacao();
 	}
 
 	// Captura imagem da webcam e envia para análise da API
