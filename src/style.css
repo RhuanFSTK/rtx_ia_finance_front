@@ -77,6 +77,14 @@ Tabela de consulta
     font-weight: 600;
 }
 
+.liveToast {
+  box-shadow: none !important;
+  border: none !important;
+  background-color: transparent !important;
+}
+
+
+
 /* Estilo responsivo para dispositivos menores */
 @media (max-width: 768px) {
     body {

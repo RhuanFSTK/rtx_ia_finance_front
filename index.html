@@ -150,36 +150,15 @@
     <!-- Toast genérico -->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
         <div id="liveToast" class="toast p-0 border-0" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 320px; max-width: 400px;">
-            <div id="toastCard" class="card shadow-sm w-100 m-0">
-                <div id="toastHeader" class="card-header text-dark d-flex align-items-center justify-content-between bg-success">
+            <div id="toastCard" class="card w-100 m-0 border-0 shadow-none">
+                <div id="toastHeader" class="card-header d-flex align-items-center justify-content-between text-white">
                     <div>
-                        <i id="toastIcon" class="bi me-2 bi-check-circle-fill"></i>
-                        <strong id="toastTitle">Gasto Classificado com Sucesso</strong>
+                        <i id="toastIcon" class="bi me-2"></i>
+                        <strong id="toastTitle"></strong>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Fechar"></button>
                 </div>
-                <div id="toastBody" class="card-body bg-light text-dark">
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Modal para mostrar o resultado detalhado -->
-    <div class="modal fade" id="resultadoModal" tabindex="-1" aria-labelledby="resultadoModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="resultadoModalLabel">Resultado da Classificação</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div class="modal-body" id="modalConteudo">
-                    <!-- Conteúdo será inserido aqui dinamicamente -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                </div>
+                <div id="toastBody" class="card-body"></div>
             </div>
         </div>
     </div>

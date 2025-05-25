@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		hideLoading();
 	}
 
-	function showToast({ type = "success", title = "", message = "" }) {
+	function showToast({ type = "success", title = "", message = "", delay = 5000 }) {
 		const toastEl = document.getElementById("liveToast");
 		const toastCard = document.getElementById("toastCard");
 		const toastHeader = document.getElementById("toastHeader");
@@ -373,9 +373,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		const toastBody = document.getElementById("toastBody");
 
 		// Limpa classes antigas
-		toastHeader.className =
-			"card-header text-white d-flex align-items-center justify-content-between";
-		toastIcon.className = "bi me-2"; // só a base
+		toastHeader.classList.remove("bg-success", "bg-danger", "bg-warning", "bg-info", "bg-primary");
+		toastIcon.classList.remove("bi-check-circle-fill", "bi-x-circle-fill", "bi-exclamation-triangle-fill", "bi-info-circle-fill", "bi-bell-fill");
 		toastBody.className = "card-body bg-light text-dark";
 
 		// Define ícone, cor do header e título conforme o tipo
@@ -391,7 +390,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			case "warning":
 				toastHeader.classList.add("bg-warning");
 				toastIcon.classList.add("bi-exclamation-triangle-fill");
-				toastBody.classList.add("text-dark"); // texto escuro no body amarelo claro
 				break;
 			case "info":
 				toastHeader.classList.add("bg-info");
@@ -406,21 +404,24 @@ document.addEventListener("DOMContentLoaded", () => {
 		toastTitle.textContent = title;
 		toastBody.innerHTML = message;
 
-		// Mostrar toast (Bootstrap 5)
-		const toastBootstrap = new bootstrap.Toast(toastEl);
+		// Sons por tipo de toast
+		const sounds = {
+			success: 'success.mp3',
+			error: 'error.mp3',
+			warning: 'warning.mp3',
+			info: 'info.mp3',
+			default: 'notification.mp3',
+		};
+		const audio = new Audio(`./sounds/${sounds[type] || sounds.default}`);
+		audio.play();
+
+		// Mostrar toast (Bootstrap 5) com delay customizado
+		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
 		toastBootstrap.show();
+
+		// Evento ao fechar
+		toastEl.addEventListener('hidden.bs.toast', () => {
+			console.log("Toast fechado.");
+		});
 	}
 });
-
-/* MODAL PRA USAR SE NESCESSARIO */
-// // Atualiza o conteúdo do modal
-// document.getElementById("modalConteudo").innerHTML = `
-// 	<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
-// 	<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
-// 	<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
-// 	<p><em>Mensagem da API:</em> ${data.mensagem}</p>`;
-
-// // Exibe o modal
-// const modalEl = document.getElementById("resultadoModal");
-// const modal = new bootstrap.Modal(modalEl);
-// modal.show();
