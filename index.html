@@ -35,14 +35,14 @@
         <!-- Resultado de Áudio/Imagem -->
         <div id="cardResultado" class="card mb-4 collapse shadow-sm fade">
             <div class="card-body">
+                <div id="waveform-container" class="collapse mb-3">
+                    <div id="waveform"></div>
+                </div>
+
                 <!-- Botões de controle de gravação -->
                 <div id="controles-gravacao" class="d-none mt-3 text-center">
                     <button id="btn-enviar-gravacao" class="btn btn-success me-2">✅ Enviar</button>
                     <button id="btn-cancelar-gravacao" class="btn btn-danger">❌ Cancelar</button>
-                </div>
-
-                <div id="waveform-container" class="collapse mb-3">
-                    <div id="waveform"></div>
                 </div>
 
                 <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none">
