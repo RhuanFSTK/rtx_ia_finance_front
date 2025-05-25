@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
 				`,
 			});
-			setTimeout(() => location.reload(), 4000);
+			location.reload()
 		} else {
 			const errorMsg = formatarErroApi(data);
 			showToast({
@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
 				`,
 			});
-			setTimeout(() => location.reload(), 4000);
+			location.reload()
 		}
 
 		// Reset estado da gravação após envio
