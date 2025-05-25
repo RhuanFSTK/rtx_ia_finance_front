@@ -2,7 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Referência aos elementos DOM (HTML) da página
 	const cardResultado = document.getElementById("cardResultado");
 	const resultadoTexto = document.getElementById("resultado-texto");
-	const resultadoAudioImagem = document.getElementById("resultado-audio-imagem");
+	const resultadoAudioImagem = document.getElementById(
+		"resultado-audio-imagem"
+	);
 	const loadingSpinner = document.getElementById("loading-spinner");
 	const waveformContainer = document.getElementById("waveform-container");
 	const videoElement = document.getElementById("video");
@@ -13,7 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	const arquivoInput = document.getElementById("arquivo-input");
 	const textoForm = document.getElementById("texto-form");
 	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
-	const btnCancelarGravacao = document.getElementById("btn-cancelar-gravacao");
+	const btnCancelarGravacao = document.getElementById(
+		"btn-cancelar-gravacao"
+	);
 	const controlesGravacao = document.getElementById("controles-gravacao");
 
 	// Eventos de clique e envio associados aos botões e formulários
@@ -91,46 +95,38 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Envia texto digitado pelo usuário para a API e trata o retorno com UI moderna (toast)
 	async function enviarTexto(event) {
 		event.preventDefault(); // Impede reload da página no envio do formulário
-
 		showLoading(); // Exibe spinner
 
 		const descricao = document.getElementById("descricao").value;
 		const formData = new FormData();
 		formData.append("descricao", descricao);
 
-		const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/registro/", formData);
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxapi.up.railway.app/registro/",
+			formData
+		);
+
+		hideLoading();
+		cardResultado.classList.add("d-none");
 
 		if (ok && data.Agente) {
-			hideLoading();
-
-			// Exibe toast de sucesso com os dados retornados pela API
-			document.getElementById('toastBody').innerHTML = `
-				<div class="card border-success shadow-sm">
-					<div class="card-header bg-success text-white">
-						<i class="bi bi-clipboard-check-fill me-2"></i>Gasto Classificado com Sucesso
-					</div>
-					<div class="card-body">
-						<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
-						<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
-						<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
-					</div>
-				</div>`;
-			const toast = new bootstrap.Toast(document.getElementById("toastBody"));
-			toast.show();
+			showToast({
+				type: "success",
+				title: "Gasto Classificado com Sucesso",
+				message: `
+					<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
+				`,
+			});
 		} else {
-			hideLoading();
-
-			document.getElementById('toastBody').innerHTML = `
-				<div class="card border-danger shadow-sm">
-					<div class="card-header bg-danger text-white">
-						<i class="bi bi-exclamation-triangle-fill me-2"></i>Erro ao Processar
-					</div>
-					<div class="card-body">
-						<p>${data.detail || 'Erro inesperado. Tente novamente.'}</p>
-					</div>
-				</div>`;
-			const toast = new bootstrap.Toast(document.getElementById("toastBody"));
-			toast.show();
+			showToast({
+				type: "error",
+				title: "Erro",
+				message: `
+					<p>${data.detail || "Erro inesperado. Tente novamente."}</p>
+				`,
+			});
 		}
 	}
 
@@ -190,14 +186,22 @@ document.addEventListener("DOMContentLoaded", () => {
 			btnEnviarGravacao.disabled = true;
 			btnCancelarGravacao.disabled = true;
 		} catch (err) {
-			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro ao acessar microfone:</strong> ${err.message}`);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro ao acessar microfone:</strong> ${err.message}`
+			);
 		}
 	}
 
 	// Envia o áudio gravado para transcrição via API
 	async function enviarGravacao() {
 		if (audioChunks.length === 0) {
-			mostrarResultado(resultadoAudioImagem, "warning", "Nenhuma gravação para enviar.");
+			mostrarResultado(
+				resultadoAudioImagem,
+				"warning",
+				"Nenhuma gravação para enviar."
+			);
 			return;
 		}
 		showLoading();
@@ -206,15 +210,26 @@ document.addEventListener("DOMContentLoaded", () => {
 		const formData = new FormData();
 		formData.append("file", audioBlob);
 
-		const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/audio/", formData);
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxapi.up.railway.app/audio/",
+			formData
+		);
 
 		hideLoading();
 
 		if (ok) {
-			mostrarResultado(resultadoAudioImagem, "success", `<strong>Transcrição:</strong> ${data.transcricao}`);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"success",
+				`<strong>Transcrição:</strong> ${data.transcricao}`
+			);
 		} else {
 			const errorMsg = formatarErroApi(data);
-			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+			);
 		}
 
 		audioChunks = [];
@@ -244,7 +259,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		try {
 			showLoading();
 
-			const streamVideo = await navigator.mediaDevices.getUserMedia({ video: true });
+			const streamVideo = await navigator.mediaDevices.getUserMedia({
+				video: true,
+			});
 			videoElement.srcObject = streamVideo;
 			videoElement.play();
 
@@ -257,27 +274,50 @@ document.addEventListener("DOMContentLoaded", () => {
 			videoElement.classList.remove("d-none");
 			canvasElement.classList.remove("d-none");
 
-			context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+			context.drawImage(
+				videoElement,
+				0,
+				0,
+				canvasElement.width,
+				canvasElement.height
+			);
 
-			const blob = await new Promise((resolve) => canvasElement.toBlob(resolve, "image/jpeg"));
+			const blob = await new Promise((resolve) =>
+				canvasElement.toBlob(resolve, "image/jpeg")
+			);
 
 			const formData = new FormData();
 			formData.append("file", blob, "foto.jpg");
 
-			const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/imagem/", formData);
+			const { ok, data } = await enviarArquivoParaAPI(
+				"https://rtxapi.up.railway.app/imagem/",
+				formData
+			);
 
 			if (ok) {
-				mostrarResultado(resultadoAudioImagem, "success", `<strong>Resultado da Análise:</strong> ${data.resultado}`);
+				mostrarResultado(
+					resultadoAudioImagem,
+					"success",
+					`<strong>Resultado da Análise:</strong> ${data.resultado}`
+				);
 			} else {
 				const errorMsg = formatarErroApi(data);
-				mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`);
+				mostrarResultado(
+					resultadoAudioImagem,
+					"danger",
+					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+				);
 			}
 
 			streamVideo.getTracks().forEach((track) => track.stop());
 			videoElement.classList.add("d-none");
 			canvasElement.classList.add("d-none");
 		} catch (err) {
-			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro ao capturar foto:</strong> ${err.message}`);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro ao capturar foto:</strong> ${err.message}`
+			);
 		} finally {
 			hideLoading();
 		}
@@ -293,31 +333,86 @@ document.addEventListener("DOMContentLoaded", () => {
 		const formData = new FormData();
 		formData.append("file", file);
 
-		const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/imagem/", formData);
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxapi.up.railway.app/imagem/",
+			formData
+		);
 
 		if (ok) {
-			mostrarResultado(resultadoAudioImagem, "success", `<strong>Resultado da Análise:</strong> ${data.resultado}`);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"success",
+				`<strong>Resultado da Análise:</strong> ${data.resultado}`
+			);
 		} else {
 			const errorMsg = formatarErroApi(data);
-			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+			);
 		}
 
 		arquivoInput.value = ""; // Limpa o input para permitir novo upload
 		hideLoading();
 	}
+
+	function showToast({ type = "success", title = "", message = "" }) {
+		const toastEl = document.getElementById("liveToast");
+		const toastCard = document.getElementById("toastCard");
+		const toastHeader = document.getElementById("toastHeader");
+		const toastIcon = document.getElementById("toastIcon");
+		const toastTitle = document.getElementById("toastTitle");
+		const toastBody = document.getElementById("toastBody");
+
+		// Limpa classes antigas
+		toastHeader.className =
+			"card-header d-flex align-items-center justify-content-between";
+		toastIcon.className = "bi me-2"; // só a base
+		toastBody.className = "card-body bg-light";
+
+		// Define ícone, cor do header e título conforme o tipo
+		switch (type) {
+			case "success":
+				toastHeader.classList.add("bg-success");
+				toastIcon.classList.add("bi-check-circle-fill");
+				break;
+			case "error":
+				toastHeader.classList.add("bg-danger");
+				toastIcon.classList.add("bi-x-circle-fill");
+				break;
+			case "warning":
+				toastHeader.classList.add("bg-warning");
+				toastIcon.classList.add("bi-exclamation-triangle-fill");
+				break;
+			case "info":
+				toastHeader.classList.add("bg-info");
+				toastIcon.classList.add("bi-info-circle-fill");
+				break;
+			default:
+				toastHeader.classList.add("bg-primary");
+				toastIcon.classList.add("bi-bell-fill");
+		}
+
+		// Define texto do título e corpo da mensagem
+		toastTitle.textContent = title;
+		toastBody.innerHTML = message;
+
+		// Mostrar toast (Bootstrap 5)
+		const toastBootstrap = new bootstrap.Toast(toastEl);
+		toastBootstrap.show();
+	}
 });
 
-
-
 /* MODAL PRA USAR SE NESCESSARIO */
-    // // Atualiza o conteúdo do modal
-    // document.getElementById("modalConteudo").innerHTML = `
-    // 	<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
-    // 	<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
-    // 	<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
-    // 	<p><em>Mensagem da API:</em> ${data.mensagem}</p>`;
+// // Atualiza o conteúdo do modal
+// document.getElementById("modalConteudo").innerHTML = `
+// 	<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
+// 	<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
+// 	<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
+// 	<p><em>Mensagem da API:</em> ${data.mensagem}</p>`;
 
-    // // Exibe o modal
-    // const modalEl = document.getElementById("resultadoModal");
-    // const modal = new bootstrap.Modal(modalEl);
-    // modal.show();
+// // Exibe o modal
+// const modalEl = document.getElementById("resultadoModal");
+// const modal = new bootstrap.Modal(modalEl);
+// modal.show();
