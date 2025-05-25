@@ -412,8 +412,20 @@ document.addEventListener("DOMContentLoaded", () => {
 			info: 'info.mp3',
 			default: 'notification.mp3',
 		};
-		const audio = new Audio(`./sounds/${sounds[type] || sounds.default}`);
-		audio.play();
+
+		const soundFile = `./sounds/${sounds[type] || sounds.default}`;
+		const audio = new Audio(soundFile);
+
+		// Garante que o navegador pode tocar o som
+		audio.addEventListener('canplaythrough', () => {
+			audio.play().catch((err) => {
+				console.warn("Erro ao tocar som:", err.message);
+			});
+		});
+
+		audio.addEventListener('error', (e) => {
+			console.warn("Erro ao carregar o áudio:", soundFile, e);
+		});
 
 		// Mostrar toast (Bootstrap 5) com delay customizado
 		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
@@ -424,4 +436,5 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.log("Toast fechado.");
 		});
 	}
+
 });
