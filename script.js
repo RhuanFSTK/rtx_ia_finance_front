@@ -115,14 +115,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		cardResultado.classList.add("d-none");
 		document.getElementById("descricao").value = "";
 
-		if (ok && data.Agente) {
+		if (ok && data.response) {
 			showToast({
 				type: "success",
 				title: "Gasto Classificado com Sucesso",
 				message: `
-					<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
-					<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
-					<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
+					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
 				`,
 			});
 
@@ -268,6 +268,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		hideLoading();
 
 		if (ok) {
+			showToast({
+				type: "success",
+				title: "Gasto Classificado com Sucesso",
+				message: `
+					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+				`,
+			});
 			mostrarResultado(
 				resultadoAudioImagem,
 				"success",
