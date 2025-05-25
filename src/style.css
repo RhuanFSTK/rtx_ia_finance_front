@@ -4,6 +4,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
 }
 
 /* Cartões */
@@ -11,6 +12,8 @@ body {
     border: none;
     border-radius: 12px;
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
 
 /* Botão personalizado */
@@ -18,6 +21,7 @@ body {
     background-color: #2e3b4e;
     border-color: #2e3b4e;
     color: white;
+    transition: 0.2s ease-in-out;
 }
 
 .btn-dark-blue:hover {
@@ -27,9 +31,12 @@ body {
 
 /* Campos de texto com foco */
 input[type="text"]:focus,
-input[type="date"]:focus {
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
     border-color: #2e3b4e;
     box-shadow: 0 0 0 0.2rem rgba(46, 59, 78, 0.25);
+    outline: none;
 }
 
 /* Elementos de vídeo e canvas */
@@ -40,17 +47,22 @@ input[type="date"]:focus {
     border-radius: 12px;
     object-fit: cover;
     background-color: black;
+    display: block;
 }
 
 /* Tabela de consulta */
 .table {
     width: 100%;
     margin-top: 20px;
+    overflow-x: auto;
+    display: block;
 }
 
 .table th,
 .table td {
     text-align: center;
+    padding: 10px;
+    white-space: nowrap;
 }
 
 .table th {
@@ -69,19 +81,20 @@ input[type="date"]:focus {
     }
 
     .card {
-        border-radius: 0;
+        border-radius: 8px;
         box-shadow: none;
+        padding: 0.75rem;
     }
 
     h1, h2, h3 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         text-align: center;
     }
 
     .table th,
     .table td {
         font-size: 0.85rem;
-        padding: 8px;
+        padding: 6px;
     }
 
     #video,
@@ -94,5 +107,32 @@ input[type="date"]:focus {
     select,
     textarea {
         font-size: 1rem !important;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .table {
+        font-size: 0.9rem;
+    }
+}
+
+/* Estilo responsivo extra para telas muito pequenas */
+@media (max-width: 480px) {
+    h1, h2, h3 {
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        padding: 10px 16px;
+    }
+
+    .table th,
+    .table td {
+        font-size: 0.75rem;
+    }
+
+    #video,
+    #canvas {
+        height: 160px;
     }
 }
