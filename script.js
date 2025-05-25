@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 
 		hideLoading();
-		cardResultado.classList.add("d-none");
+		resetGravacao();
 
 		if (ok) {
 			showToast({
@@ -303,12 +303,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			location.reload();
 		}
 
-		resetGravacao();
+		
 	}
 
 	// Reset estado da gravação após envio
 	function resetGravacao() { 
 		audioChunks = [];
+		cardResultado.classList.add("d-none");
 		controlesGravacao.classList.add("d-none");
 		resultadoAudioImagem.classList.add("d-none");
 		gravarBtn.textContent = "🎙 Gravar Áudio";
