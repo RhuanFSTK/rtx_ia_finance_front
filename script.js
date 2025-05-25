@@ -81,63 +81,37 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// Função corrigida e ajustada para envio de texto para API
-	async function enviarTexto(event) {
-		event.preventDefault();
+	 document.getElementById("texto-form").addEventListener("submit", async function (e) {
+        e.preventDefault(); // impede recarregamento da página
 
-		const descricao = document.getElementById('descricao').value;
-		console.log('Enviando descrição:', descricao);
+        const descricao = document.getElementById("descricao").value;
 
-		const formData = new FormData();
-		formData.append('descricao', descricao);
+        const formData = new FormData();
+        formData.append("descricao", descricao);
 
-		for (const [key, value] of formData.entries()) {
-			console.log(`${key}:`, value);
-		}
+        try {
+            const response = await fetch("https://rtxapi.up.railway.app/registro/", {
+                method: "POST",
+                body: formData
+            });
 
-		showLoading();
+            if (!response.ok) {
+                throw new Error("Erro ao registrar gasto");
+            }
 
-		try {
-			const { ok, data } = await enviarArquivoParaAPI('https://rtxapi.up.railway.app/registro/', formData);
+            const data = await response.json();
+            console.log("Resposta do servidor:", data);
 
-			if (ok && data) {
-				// Se a API retorna o objeto 'gpt' com os dados, usamos ele para mostrar o resultado
-				if (data.gpt) {
-					const { descricao, classificacao, valor } = data.gpt;
-					mostrarResultado(
-						resultadoTexto,
-						"success",
-						`<strong>Registrado com sucesso!</strong><br>
-						<strong>Descrição:</strong> ${descricao}<br>
-						<strong>Classificação:</strong> ${classificacao}<br>
-						<strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
-					);
-				} else {
-					// Caso não tenha o 'gpt', mostramos o que vier direto
-					mostrarResultado(
-						resultadoTexto,
-						"success",
-						`<p><strong>Descrição:</strong> ${data.descricao || '-'}<br>
-						<strong>Classificação:</strong> ${data.classificacao || '-'}</p>`
-					);
-				}
-			} else {
-				const errorMsg = formatarErroApi(data);
-				mostrarResultado(
-					resultadoTexto,
-					"danger",
-					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-				);
-			}
-		} catch (err) {
-			mostrarResultado(
-				resultadoTexto,
-				"danger",
-				`<strong>Erro na requisição:</strong> ${err.message}`
-			);
-		} finally {
-			hideLoading();
-		}
-	}
+            alert("✅ Gasto registrado com sucesso!");
+
+            // Resetar input
+            document.getElementById("descricao").value = "";
+
+        } catch (error) {
+            console.error("Erro:", error);
+            alert("❌ Erro ao registrar o gasto!");
+        }
+    });
 
 	// Inicia ou para gravação de áudio
 	async function toggleGravacao() {
