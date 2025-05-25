@@ -1,9 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+	// Referência aos elementos DOM (HTML) da página
 	const cardResultado = document.getElementById("cardResultado");
 	const resultadoTexto = document.getElementById("resultado-texto");
-	const resultadoAudioImagem = document.getElementById(
-		"resultado-audio-imagem"
-	);
+	const resultadoAudioImagem = document.getElementById("resultado-audio-imagem");
 	const loadingSpinner = document.getElementById("loading-spinner");
 	const waveformContainer = document.getElementById("waveform-container");
 	const videoElement = document.getElementById("video");
@@ -14,12 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	const arquivoInput = document.getElementById("arquivo-input");
 	const textoForm = document.getElementById("texto-form");
 	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
-	const btnCancelarGravacao = document.getElementById(
-		"btn-cancelar-gravacao"
-	);
+	const btnCancelarGravacao = document.getElementById("btn-cancelar-gravacao");
 	const controlesGravacao = document.getElementById("controles-gravacao");
 
-	// Eventos dos botões e formulário
+	// Eventos de clique e envio associados aos botões e formulários
 	gravarBtn.addEventListener("click", toggleGravacao);
 	btnEnviarGravacao.addEventListener("click", enviarGravacao);
 	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
@@ -28,10 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 
+	// Variáveis de controle da gravação de áudio
 	let mediaRecorder;
 	let audioChunks = [];
 	let stream;
 
+	// Mostra o spinner de carregamento e exibe o card de resultado
 	function showLoading() {
 		loadingSpinner.classList.remove("d-none");
 		cardResultado.classList.remove("d-none");
@@ -39,10 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		cardResultado.classList.remove("collapse");
 	}
 
+	// Oculta o spinner de carregamento
 	function hideLoading() {
 		loadingSpinner.classList.add("d-none");
 	}
 
+	// Formata a mensagem de erro da API para exibição no frontend
 	function formatarErroApi(data) {
 		if (!data) return "Erro desconhecido";
 		if (typeof data === "string") return data;
@@ -63,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
+	// Exibe mensagens estilizadas (alertas de sucesso, erro etc.) no container indicado
 	function mostrarResultado(container, tipo, mensagem) {
 		container.className = "";
 		container.classList.add("alert", `alert-${tipo}`, "fade", "show");
@@ -72,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		cardResultado.classList.remove("collapse");
 	}
 
+	// Função genérica para enviar qualquer FormData para um endpoint da API
 	async function enviarArquivoParaAPI(endpoint, formData) {
 		try {
 			const response = await fetch(endpoint, {
@@ -85,69 +88,53 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// Função corrigida e ajustada para envio de texto para API
+	// Envia texto digitado pelo usuário para a API e trata o retorno com UI moderna (toast)
 	async function enviarTexto(event) {
-		event.preventDefault();
+		event.preventDefault(); // Impede reload da página no envio do formulário
 
-		showLoading();
+		showLoading(); // Exibe spinner
 
 		const descricao = document.getElementById("descricao").value;
 		const formData = new FormData();
 		formData.append("descricao", descricao);
-		console.log("FormData:", Object.fromEntries(formData.entries()));
 
-		const { ok, data } = await enviarArquivoParaAPI(
-			"https://rtxapi.up.railway.app/registro/",
-			formData
-		);
-		console.log("RESPONSE:", data);
-
+		const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/registro/", formData);
 
 		if (ok && data.Agente) {
-			hideLoading();		
-			// // Mostrar Toast de sucesso
-			// Preenche o corpo do toast com o seu conteúdo bonito
+			hideLoading();
+
+			// Exibe toast de sucesso com os dados retornados pela API
 			document.getElementById('toastBody').innerHTML = `
 				<div class="card border-success shadow-sm">
 					<div class="card-header bg-success text-white">
-					<i class="bi bi-clipboard-check-fill me-2"></i>Gasto Classificado com Sucesso
+						<i class="bi bi-clipboard-check-fill me-2"></i>Gasto Classificado com Sucesso
 					</div>
 					<div class="card-body">
-					<p class="mb-2"><strong><i class="bi bi-pencil me-1"></i>Descrição:</strong> ${data.Agente.descricao}</p>
-					<p class="mb-2"><strong><i class="bi bi-tags me-1"></i>Classificação:</strong> ${data.Agente.classificacao}</p>
-					<p class="mb-0"><strong><i class="bi bi-cash-coin me-1"></i>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
+						<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
+						<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
+						<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
 					</div>
-				</div>
-				`;
-
-			// Mostra o toast
-			const toastEl = document.getElementById("toastBody");
-			const toast = new bootstrap.Toast(toastEl);
+				</div>`;
+			const toast = new bootstrap.Toast(document.getElementById("toastBody"));
 			toast.show();
-
 		} else {
 			hideLoading();
-			// Preenche o corpo do toast com o seu conteúdo bonito
+
 			document.getElementById('toastBody').innerHTML = `
 				<div class="card border-danger shadow-sm">
 					<div class="card-header bg-danger text-white">
-					<i class="bi bi-exclamation-triangle-fill me-2"></i>Erro ao Processar
+						<i class="bi bi-exclamation-triangle-fill me-2"></i>Erro ao Processar
 					</div>
 					<div class="card-body">
-					<p class="mb-0">${data.detail || 'Ocorreu um erro inesperado. Tente novamente mais tarde.'}</p>
+						<p>${data.detail || 'Erro inesperado. Tente novamente.'}</p>
 					</div>
-				</div>
-				`;
-
-			// Mostra o toast
-			const toastEl = document.getElementById("toastBody");
-			const toast = new bootstrap.Toast(toastEl);
+				</div>`;
+			const toast = new bootstrap.Toast(document.getElementById("toastBody"));
 			toast.show();
-
 		}
 	}
 
-	// Inicia ou para gravação de áudio
+	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
 	async function toggleGravacao() {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
@@ -159,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		try {
+			// Solicita permissão para acessar o microfone
 			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 			mediaRecorder = new MediaRecorder(stream);
 			audioChunks = [];
@@ -167,6 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			cardResultado.classList.add("show");
 			cardResultado.classList.remove("collapse");
 
+			// Inicializa visualização de áudio
 			waveformContainer.classList.remove("collapse");
 			waveformContainer.classList.add("show");
 
@@ -178,6 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				height: 100,
 			});
 
+			// Captura os dados de áudio em tempo real
 			mediaRecorder.ondataavailable = (event) => {
 				audioChunks.push(event.data);
 				const blob = new Blob(audioChunks, { type: "audio/webm" });
@@ -200,22 +190,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			btnEnviarGravacao.disabled = true;
 			btnCancelarGravacao.disabled = true;
 		} catch (err) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro ao acessar microfone:</strong> ${err.message}`
-			);
+			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro ao acessar microfone:</strong> ${err.message}`);
 		}
 	}
 
-	// Envia gravação de áudio para API
+	// Envia o áudio gravado para transcrição via API
 	async function enviarGravacao() {
 		if (audioChunks.length === 0) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"warning",
-				"Nenhuma gravação para enviar."
-			);
+			mostrarResultado(resultadoAudioImagem, "warning", "Nenhuma gravação para enviar.");
 			return;
 		}
 		showLoading();
@@ -224,36 +206,24 @@ document.addEventListener("DOMContentLoaded", () => {
 		const formData = new FormData();
 		formData.append("file", audioBlob);
 
-		const { ok, data } = await enviarArquivoParaAPI(
-			"https://rtxapi.up.railway.app/audio/",
-			formData
-		);
+		const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/audio/", formData);
 
 		hideLoading();
 
 		if (ok) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"success",
-				`<strong>Transcrição:</strong> ${data.transcricao}`
-			);
+			mostrarResultado(resultadoAudioImagem, "success", `<strong>Transcrição:</strong> ${data.transcricao}`);
 		} else {
 			const errorMsg = formatarErroApi(data);
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-			);
+			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`);
 		}
 
 		audioChunks = [];
 		controlesGravacao.classList.add("d-none");
 		waveformContainer.classList.add("collapse");
-		waveformContainer.classList.remove("show");
 		gravarBtn.textContent = "🎙 Gravar Áudio";
 	}
 
-	// Cancela gravação e limpa estados
+	// Cancela a gravação atual e limpa a UI relacionada
 	function cancelarGravacao() {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
@@ -264,21 +234,17 @@ document.addEventListener("DOMContentLoaded", () => {
 		audioChunks = [];
 		controlesGravacao.classList.add("d-none");
 		waveformContainer.classList.add("collapse");
-		waveformContainer.classList.remove("show");
 		resultadoAudioImagem.classList.add("d-none");
 		gravarBtn.textContent = "🎙 Gravar Áudio";
 		gravarBtn.disabled = false;
 	}
 
-	// Captura foto da webcam, envia para API e mostra resultado
+	// Captura imagem da webcam e envia para análise da API
 	async function tirarFoto() {
 		try {
 			showLoading();
 
-			const streamVideo = await navigator.mediaDevices.getUserMedia({
-				video: true,
-			});
-			videoElement.srcObject = null;
+			const streamVideo = await navigator.mediaDevices.getUserMedia({ video: true });
 			videoElement.srcObject = streamVideo;
 			videoElement.play();
 
@@ -291,60 +257,35 @@ document.addEventListener("DOMContentLoaded", () => {
 			videoElement.classList.remove("d-none");
 			canvasElement.classList.remove("d-none");
 
-			context.drawImage(
-				videoElement,
-				0,
-				0,
-				canvasElement.width,
-				canvasElement.height
-			);
+			context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
 
-			const blob = await new Promise((resolve) =>
-				canvasElement.toBlob(resolve, "image/jpeg")
-			);
+			const blob = await new Promise((resolve) => canvasElement.toBlob(resolve, "image/jpeg"));
 
 			const formData = new FormData();
 			formData.append("file", blob, "foto.jpg");
 
-			const { ok, data } = await enviarArquivoParaAPI(
-				"https://rtxapi.up.railway.app/imagem/",
-				formData
-			);
+			const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/imagem/", formData);
 
 			if (ok) {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"success",
-					`<strong>Resultado da Análise:</strong> ${data.resultado}`
-				);
+				mostrarResultado(resultadoAudioImagem, "success", `<strong>Resultado da Análise:</strong> ${data.resultado}`);
 			} else {
 				const errorMsg = formatarErroApi(data);
-				mostrarResultado(
-					resultadoAudioImagem,
-					"danger",
-					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-				);
+				mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`);
 			}
 
 			streamVideo.getTracks().forEach((track) => track.stop());
 			videoElement.classList.add("d-none");
 			canvasElement.classList.add("d-none");
 		} catch (err) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro ao capturar foto:</strong> ${err.message}`
-			);
+			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro ao capturar foto:</strong> ${err.message}`);
 		} finally {
 			hideLoading();
 		}
 	}
 
-	// Carrega arquivo local, envia para API e mostra resultado
+	// Permite selecionar um arquivo do computador e envia a imagem para análise
 	async function carregarArquivo() {
-		if (arquivoInput.files.length === 0) {
-			return;
-		}
+		if (arquivoInput.files.length === 0) return;
 
 		showLoading();
 
@@ -352,27 +293,31 @@ document.addEventListener("DOMContentLoaded", () => {
 		const formData = new FormData();
 		formData.append("file", file);
 
-		const { ok, data } = await enviarArquivoParaAPI(
-			"https://rtxapi.up.railway.app/imagem/",
-			formData
-		);
+		const { ok, data } = await enviarArquivoParaAPI("https://rtxapi.up.railway.app/imagem/", formData);
 
 		if (ok) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"success",
-				`<strong>Resultado da Análise:</strong> ${data.resultado}`
-			);
+			mostrarResultado(resultadoAudioImagem, "success", `<strong>Resultado da Análise:</strong> ${data.resultado}`);
 		} else {
 			const errorMsg = formatarErroApi(data);
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-			);
+			mostrarResultado(resultadoAudioImagem, "danger", `<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`);
 		}
 
-		arquivoInput.value = "";
+		arquivoInput.value = ""; // Limpa o input para permitir novo upload
 		hideLoading();
 	}
 });
+
+
+
+/* MODAL PRA USAR SE NESCESSARIO */
+    // // Atualiza o conteúdo do modal
+    // document.getElementById("modalConteudo").innerHTML = `
+    // 	<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
+    // 	<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
+    // 	<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
+    // 	<p><em>Mensagem da API:</em> ${data.mensagem}</p>`;
+
+    // // Exibe o modal
+    // const modalEl = document.getElementById("resultadoModal");
+    // const modal = new bootstrap.Modal(modalEl);
+    // modal.show();
