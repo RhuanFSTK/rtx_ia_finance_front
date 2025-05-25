@@ -1,7 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const cardResultado = document.getElementById("cardResultado");
 	const resultadoTexto = document.getElementById("resultado-texto");
-	const resultadoAudioImagem = document.getElementById("resultado-audio-imagem");
+	const resultadoAudioImagem = document.getElementById(
+		"resultado-audio-imagem"
+	);
 	const loadingSpinner = document.getElementById("loading-spinner");
 	const waveformContainer = document.getElementById("waveform-container");
 	const videoElement = document.getElementById("video");
@@ -12,7 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	const arquivoInput = document.getElementById("arquivo-input");
 	const textoForm = document.getElementById("texto-form");
 	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
-	const btnCancelarGravacao = document.getElementById("btn-cancelar-gravacao");
+	const btnCancelarGravacao = document.getElementById(
+		"btn-cancelar-gravacao"
+	);
 	const controlesGravacao = document.getElementById("controles-gravacao");
 
 	// Eventos dos botões e formulário
@@ -30,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	function showLoading() {
 		loadingSpinner.classList.remove("d-none");
+		cardResultado.classList.remove("d-none");
 		cardResultado.classList.add("show");
 		cardResultado.classList.remove("collapse");
 	}
@@ -83,21 +88,62 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Função corrigida e ajustada para envio de texto para API
 	async function enviarTexto(event) {
 		event.preventDefault();
+
 		showLoading();
 
-		const descricao = document.getElementById('descricao').value;
+		const descricao = document.getElementById("descricao").value;
 		const formData = new FormData();
-		formData.append('descricao', descricao);
+		formData.append("descricao", descricao);
+		console.log("FormData:", Object.fromEntries(formData.entries()));
 
-		const { ok, data } = await enviarArquivoParaAPI('https://rtxapi.up.railway.app/registro/', formData);
-		if (ok) {
-			hideLoading();
-			resultadoTexto.innerHTML = `
-				<p><strong>Descrição:</strong> ${data.descricao}</p>
-				<p><strong>Classificação:</strong> ${data.classificacao}</p>
-			`;
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxapi.up.railway.app/registro/",
+			formData
+		);
+		console.log("RESPONSE:", data);
+
+
+		if (ok && data.Agente) {
+			hideLoading();		
+			// // Mostrar Toast de sucesso
+			// Preenche o corpo do toast com o seu conteúdo bonito
+			document.getElementById('toastBody').innerHTML = `
+				<div class="card border-success shadow-sm">
+					<div class="card-header bg-success text-white">
+					<i class="bi bi-clipboard-check-fill me-2"></i>Gasto Classificado com Sucesso
+					</div>
+					<div class="card-body">
+					<p class="mb-2"><strong><i class="bi bi-pencil me-1"></i>Descrição:</strong> ${data.Agente.descricao}</p>
+					<p class="mb-2"><strong><i class="bi bi-tags me-1"></i>Classificação:</strong> ${data.Agente.classificacao}</p>
+					<p class="mb-0"><strong><i class="bi bi-cash-coin me-1"></i>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
+					</div>
+				</div>
+				`;
+
+			// Mostra o toast
+			const toastEl = document.getElementById("toastBody");
+			const toast = new bootstrap.Toast(toastEl);
+			toast.show();
+
 		} else {
-		resultadoTexto.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
+			hideLoading();
+			// Preenche o corpo do toast com o seu conteúdo bonito
+			document.getElementById('toastBody').innerHTML = `
+				<div class="card border-danger shadow-sm">
+					<div class="card-header bg-danger text-white">
+					<i class="bi bi-exclamation-triangle-fill me-2"></i>Erro ao Processar
+					</div>
+					<div class="card-body">
+					<p class="mb-0">${data.detail || 'Ocorreu um erro inesperado. Tente novamente mais tarde.'}</p>
+					</div>
+				</div>
+				`;
+
+			// Mostra o toast
+			const toastEl = document.getElementById("toastBody");
+			const toast = new bootstrap.Toast(toastEl);
+			toast.show();
+
 		}
 	}
 
