@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				mostrarResultado(
 					resultadoAudioImagem,
 					"danger",
-					"<strong>Erro:</strong> Plugin de microfone do WaveSurfer não está carregado corretamente."
+					"<strong>Erro:</strong> Plugin  WaveSurfer não está carregado corretamente."
 				);
 				return;
 			}
@@ -474,28 +474,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		toastTitle.textContent = title;
 		toastBody.innerHTML = message;
 
-		// Sons por tipo de toast
-		const sounds = {
-			success: 'success.mp3',
-			error: 'error.mp3',
-			warning: 'warning.mp3',
-			info: 'info.mp3',
-			default: 'notification.mp3',
-		};
+		// // Sons por tipo de toast
+		// const sounds = {
+		// 	success: 'success.mp3',
+		// 	error: 'error.mp3',
+		// 	warning: 'warning.mp3',
+		// 	info: 'info.mp3',
+		// 	default: 'notification.mp3',
+		// };
 
-		const soundFile = `./sounds/${sounds[type] || sounds.default}`;
-		const audio = new Audio(soundFile);
+		// const soundFile = `./sounds/${sounds[type] || sounds.default}`;
+		// const audio = new Audio(soundFile);
 
-		// Garante que o navegador pode tocar o som
-		audio.addEventListener('canplaythrough', () => {
-			audio.play().catch((err) => {
-				console.warn("Erro ao tocar som:", err.message);
-			});
-		});
+		// // Garante que o navegador pode tocar o som
+		// audio.addEventListener('canplaythrough', () => {
+		// 	audio.play().catch((err) => {
+		// 		console.warn("Erro ao tocar som:", err.message);
+		// 	});
+		// });
 
-		audio.addEventListener('error', (e) => {
-			console.warn("Erro ao carregar o áudio:", soundFile, e);
-		});
+		// audio.addEventListener('error', (e) => {
+		// 	console.warn("Erro ao carregar o áudio:", soundFile, e);
+		// });
 
 		// Mostrar toast (Bootstrap 5) com delay customizado
 		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
