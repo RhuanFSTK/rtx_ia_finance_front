@@ -80,12 +80,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// Envia texto do formulário para API e mostra resposta GPT
+	// Função corrigida e ajustada para envio de texto para API
 	async function enviarTexto(event) {
 		event.preventDefault();
 
 		const descricao = document.getElementById('descricao').value;
-		console.log(descricao)
+		console.log('Enviando descrição:', descricao);
+
 		const formData = new FormData();
 		formData.append('descricao', descricao);
 
@@ -95,48 +96,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		showLoading();
 
-		const { ok, data } = await enviarArquivoParaAPI('https://rtxapi.up.railway.app/registro/', formData);
+		try {
+			const { ok, data } = await enviarArquivoParaAPI('https://rtxapi.up.railway.app/registro/', formData);
 
-		if (ok) {
-		resultadoTexto.innerHTML = `
-			<p><strong>Descrição:</strong> ${data.descricao}</p>
-			<p><strong>Classificação:</strong> ${data.classificacao}</p>
-		`;
-		} else {
-		resultadoTexto.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
-		}
-
-		const data = await response.json();
-
-		console.log(data);
-
-		hideLoading();
-
-		if (response.ok && data.gpt) {
-			const { descricao, classificacao, valor } = data.gpt;
-			mostrarResultado(
-				resultadoTexto,
-				"success",
-				`<strong>Registrado com sucesso!</strong><br>
-		<strong>Descrição:</strong> ${descricao}<br>
-		<strong>Classificação:</strong> ${classificacao}<br>
-		<strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
-			);
-		} else {
-			const errorMsg = formatarErroApi(data);
+			if (ok && data) {
+				// Se a API retorna o objeto 'gpt' com os dados, usamos ele para mostrar o resultado
+				if (data.gpt) {
+					const { descricao, classificacao, valor } = data.gpt;
+					mostrarResultado(
+						resultadoTexto,
+						"success",
+						`<strong>Registrado com sucesso!</strong><br>
+						<strong>Descrição:</strong> ${descricao}<br>
+						<strong>Classificação:</strong> ${classificacao}<br>
+						<strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
+					);
+				} else {
+					// Caso não tenha o 'gpt', mostramos o que vier direto
+					mostrarResultado(
+						resultadoTexto,
+						"success",
+						`<p><strong>Descrição:</strong> ${data.descricao || '-'}<br>
+						<strong>Classificação:</strong> ${data.classificacao || '-'}</p>`
+					);
+				}
+			} else {
+				const errorMsg = formatarErroApi(data);
+				mostrarResultado(
+					resultadoTexto,
+					"danger",
+					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+				);
+			}
+		} catch (err) {
 			mostrarResultado(
 				resultadoTexto,
 				"danger",
-				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+				`<strong>Erro na requisição:</strong> ${err.message}`
 			);
+		} finally {
+			hideLoading();
 		}
-	} catch (err) {
-		hideLoading();
-		mostrarResultado(
-			resultadoTexto,
-			"danger",
-			`<strong>Erro na requisição:</strong> ${err.message}`
-		);
 	}
 
 	// Inicia ou para gravação de áudio
@@ -321,25 +321,20 @@ document.addEventListener("DOMContentLoaded", () => {
 			streamVideo.getTracks().forEach((track) => track.stop());
 			videoElement.classList.add("d-none");
 			canvasElement.classList.add("d-none");
-			hideLoading();
 		} catch (err) {
-			hideLoading();
 			mostrarResultado(
 				resultadoAudioImagem,
 				"danger",
 				`<strong>Erro ao capturar foto:</strong> ${err.message}`
 			);
+		} finally {
+			hideLoading();
 		}
 	}
 
-	// Carrega arquivo selecionado e envia para API de imagem
+	// Carrega arquivo local, envia para API e mostra resultado
 	async function carregarArquivo() {
-		if (!arquivoInput.files.length) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"warning",
-				"Nenhum arquivo selecionado."
-			);
+		if (arquivoInput.files.length === 0) {
 			return;
 		}
 
@@ -353,8 +348,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			"https://rtxapi.up.railway.app/imagem/",
 			formData
 		);
-
-		hideLoading();
 
 		if (ok) {
 			mostrarResultado(
@@ -370,7 +363,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
 			);
 		}
-	}
 
-	
+		arquivoInput.value = "";
+		hideLoading();
+	}
 });
