@@ -50,12 +50,15 @@ textarea:focus {
     display: block;
 }
 
-/* Tabela de consulta */
+Tabela de consulta
 .table {
     width: 100%;
     margin-top: 20px;
     overflow-x: auto;
-    display: block;
+}
+
+.dataTables_filter {
+    margin-bottom: 1rem; /* ou 16px, ou 20px... ajusta como quiser */
 }
 
 .table th,
