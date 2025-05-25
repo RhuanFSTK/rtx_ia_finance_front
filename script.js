@@ -297,7 +297,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		audioChunks = [];
 		controlesGravacao.classList.add("d-none");
 		waveformContainer.classList.add("collapse");
+		resultadoAudioImagem.classList.add("d-none");
 		gravarBtn.textContent = "🎙 Gravar Áudio";
+		gravarBtn.disabled = false;
 	}
 
 	// Cancela a gravação atual e limpa a UI relacionada
