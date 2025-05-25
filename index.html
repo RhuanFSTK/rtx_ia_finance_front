@@ -85,7 +85,7 @@
         <div class="card shadow-sm mt-2">
             <div class="card-body">
                 <h4 class="card-title mb-3">📊 Consultar Gastos</h4>
-                <form id="consulta-form">
+                <form id="consulta-form mb-3">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-5">
                             <label for="data-inicio" class="form-label">Data Início</label>
@@ -100,51 +100,54 @@
                         </div>
                     </div>
                 </form>
-                <div class="table-responsive mt-4">
-                    <table id="tabela-gastos" class="table table-striped table-bordered w-100">
-                        <thead>
-                            <tr>
-                                <th>Descrição</th>
-                                <th>Data</th>
-                                <th>Valor</th>
-                                <th>Categoria</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Almoço no restaurante</td>
-                                <td>20-03</td>
-                                <td>R$ 35,90</td>
-                                <td>Alimentação</td>
-                            </tr>
-                            <tr>
-                                <td>Transporte de ida</td>
-                                <td>21-03</td>
-                                <td>R$ 12,50</td>
-                                <td>Transporte</td>
-                            </tr>
-                            <tr>
-                                <td>Compra de material de escritório</td>
-                                <td>25-03</td>
-                                <td>R$ 45,00</td>
-                                <td>Escritório</td>
-                            </tr>
-                            <tr>
-                                <td>Jantar com amigos</td>
-                                <td>30-03</td>
-                                <td>R$ 60,00</td>
-                                <td>Alimentação</td>
-                            </tr>
-                            <tr>
-                                <td>Uber para reunião</td>
-                                <td>02-04</td>
-                                <td>R$ 25,00</td>
-                                <td>Transporte</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="tabela-gastos" class="table table-striped table-bordered w-100">
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Data</th>
+                                        <th>Valor</th>
+                                        <th>Categoria</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Almoço no restaurante</td>
+                                        <td>20-03</td>
+                                        <td>R$ 35,90</td>
+                                        <td>Alimentação</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Transporte de ida</td>
+                                        <td>21-03</td>
+                                        <td>R$ 12,50</td>
+                                        <td>Transporte</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Compra de material de escritório</td>
+                                        <td>25-03</td>
+                                        <td>R$ 45,00</td>
+                                        <td>Escritório</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jantar com amigos</td>
+                                        <td>30-03</td>
+                                        <td>R$ 60,00</td>
+                                        <td>Alimentação</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Uber para reunião</td>
+                                        <td>02-04</td>
+                                        <td>R$ 25,00</td>
+                                        <td>Transporte</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-
             </div>
         </div>
     </div>
