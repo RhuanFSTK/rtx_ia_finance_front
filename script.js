@@ -277,18 +277,17 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
 				`,
 			});
-			mostrarResultado(
-				resultadoAudioImagem,
-				"success",
-				`<strong>Transcrição:</strong> ${data.transcricao}`
-			);
 		} else {
 			const errorMsg = formatarErroApi(data);
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-			);
+			showToast({
+				type: "erro",
+				title: "Erro",
+				message: `
+					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+				`,
+			});
 		}
 
 		audioChunks = [];
@@ -473,28 +472,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		toastTitle.textContent = title;
 		toastBody.innerHTML = message;
 
-		// // Sons por tipo de toast
-		// const sounds = {
-		// 	success: 'success.mp3',
-		// 	error: 'error.mp3',
-		// 	warning: 'warning.mp3',
-		// 	info: 'info.mp3',
-		// 	default: 'notification.mp3',
-		// };
+		// Sons por tipo de toast
+		const sounds = {
+			success: 'success.mp3',
+			error: 'error.mp3',
+			warning: 'warning.mp3',
+			info: 'info.mp3',
+			default: 'notification.mp3',
+		};
 
-		// const soundFile = `./sounds/${sounds[type] || sounds.default}`;
-		// const audio = new Audio(soundFile);
+		const soundFile = `./sounds/${sounds[type] || sounds.default}`;
+		const audio = new Audio(soundFile);
 
-		// // Garante que o navegador pode tocar o som
-		// audio.addEventListener('canplaythrough', () => {
-		// 	audio.play().catch((err) => {
-		// 		console.warn("Erro ao tocar som:", err.message);
-		// 	});
-		// });
+		// Garante que o navegador pode tocar o som
+		audio.addEventListener('canplaythrough', () => {
+			audio.play().catch((err) => {
+				console.warn("Erro ao tocar som:", err.message);
+			});
+		});
 
-		// audio.addEventListener('error', (e) => {
-		// 	console.warn("Erro ao carregar o áudio:", soundFile, e);
-		// });
+		audio.addEventListener('error', (e) => {
+			console.warn("Erro ao carregar o áudio:", soundFile, e);
+		});
 
 		// Mostrar toast (Bootstrap 5) com delay customizado
 		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
