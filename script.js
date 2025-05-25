@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-	// Referência aos elementos DOM (HTML) da página
+	// ===== VARIÁVEIS DE CONTROLE DA GRAVAÇÃO DE ÁUDIO =====
+	let mediaRecorder;
+	let audioChunks = [];
+	let stream;
+
+	// ===== REFERÊNCIAS AOS ELEMENTOS DOM (HTML) =====
 	const cardResultado = document.getElementById("cardResultado");
 	const resultadoTexto = document.getElementById("resultado-texto");
 	const resultadoAudioImagem = document.getElementById(
@@ -9,18 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
 	const waveformContainer = document.getElementById("waveform-container");
 	const videoElement = document.getElementById("video");
 	const canvasElement = document.getElementById("canvas");
+
 	const gravarBtn = document.getElementById("gravar-btn");
 	const capturaFotoBtn = document.getElementById("captura-foto-btn");
 	const carregarBtn = document.getElementById("carregar-btn");
 	const arquivoInput = document.getElementById("arquivo-input");
 	const textoForm = document.getElementById("texto-form");
+
 	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
 	const btnCancelarGravacao = document.getElementById(
 		"btn-cancelar-gravacao"
 	);
 	const controlesGravacao = document.getElementById("controles-gravacao");
 
-	// Eventos de clique e envio associados aos botões e formulários
+	// ===== EVENTOS (LISTENERS) =====
 	gravarBtn.addEventListener("click", toggleGravacao);
 	btnEnviarGravacao.addEventListener("click", enviarGravacao);
 	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
@@ -28,11 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	carregarBtn.addEventListener("click", () => arquivoInput.click());
 	arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
-
-	// Variáveis de controle da gravação de áudio
-	let mediaRecorder;
-	let audioChunks = [];
-	let stream;
 
 	// Mostra o spinner de carregamento e exibe o card de resultado
 	function showLoading() {
@@ -111,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		hideLoading();
 		cardResultado.classList.add("d-none");
-		document.getElementById("descricao").value = '';	
+		document.getElementById("descricao").value = "";
 
 		if (ok && data.Agente) {
 			showToast({
@@ -139,6 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
 	async function toggleGravacao() {
+		console.log("Iniciando gravação");
+
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
 			gravarBtn.textContent = "🎙 Gravar Áudio";
@@ -148,41 +152,74 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
+		if (typeof MediaRecorder === "undefined") {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				"<strong>Erro:</strong> Este navegador não suporta gravação de áudio."
+			);
+			return;
+		}
+
 		try {
-			// Solicita permissão para acessar o microfone
+			// Permissão do microfone ON
 			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 			mediaRecorder = new MediaRecorder(stream);
 			audioChunks = [];
 
+			// UI ativada
 			resultadoAudioImagem.classList.add("d-none");
 			cardResultado.classList.add("show");
 			cardResultado.classList.remove("collapse");
 
-			// Inicializa visualização de áudio
 			waveformContainer.classList.remove("collapse");
 			waveformContainer.classList.add("show");
 
+			// Destrói waveSurfer antigo se existir (limpeza total)
 			if (window.waveSurfer) window.waveSurfer.destroy();
+
+			if (!WaveSurfer.microphone || !WaveSurfer.microphone.create) {
+				mostrarResultado(
+					resultadoAudioImagem,
+					"danger",
+					"<strong>Erro:</strong> Plugin de microfone do WaveSurfer não está carregado corretamente."
+				);
+				return;
+			}
+
+			// Cria nova instância com plugin Microfone devidamente carregado
 			window.waveSurfer = WaveSurfer.create({
 				container: "#waveform",
 				waveColor: "#4F46E5",
 				progressColor: "#6366F1",
 				height: 100,
+				plugins: [WaveSurfer.microphone.create()],
 			});
 
-			// Captura os dados de áudio em tempo real
+			// Start microfone (visualização do áudio rolando)
+			window.waveSurfer.microphone.start();
+
+			// Captura dados da gravação em tempo real
 			mediaRecorder.ondataavailable = (event) => {
 				audioChunks.push(event.data);
-				const blob = new Blob(audioChunks, { type: "audio/webm" });
-				const url = URL.createObjectURL(blob);
-				window.waveSurfer.load(url);
 			};
 
 			mediaRecorder.onstop = () => {
+				const blob = new Blob(audioChunks, { type: "audio/webm" });
+				const url = URL.createObjectURL(blob);
+				window.waveSurfer.load(url);
+
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
 				gravarBtn.disabled = false;
+
+				// Para todos os tracks de áudio
 				if (stream) stream.getTracks().forEach((track) => track.stop());
+
+				// Para o microfone do WaveSurfer
+				if (window.waveSurfer && window.waveSurfer.microphone) {
+					window.waveSurfer.microphone.stop();
+				}
 			};
 
 			mediaRecorder.start();
@@ -199,6 +236,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				`<strong>Erro ao acessar microfone:</strong> ${err.message}`
 			);
 		}
+
+		console.log({
+			cardResultado: cardResultado.classList.toString(),
+			waveformContainer: waveformContainer.classList.toString(),
+			controlesGravacao: controlesGravacao.classList.toString(),
+		});
 	}
 
 	// Envia o áudio gravado para transcrição via API
@@ -364,7 +407,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		hideLoading();
 	}
 
-	function showToast({ type = "success", title = "", message = "", delay = 5000 }) {
+	function showToast({
+		type = "success",
+		title = "",
+		message = "",
+		delay = 5000,
+	}) {
 		const toastEl = document.getElementById("liveToast");
 		const toastCard = document.getElementById("toastCard");
 		const toastHeader = document.getElementById("toastHeader");
@@ -373,8 +421,20 @@ document.addEventListener("DOMContentLoaded", () => {
 		const toastBody = document.getElementById("toastBody");
 
 		// Limpa classes antigas
-		toastHeader.classList.remove("bg-success", "bg-danger", "bg-warning", "bg-info", "bg-primary");
-		toastIcon.classList.remove("bi-check-circle-fill", "bi-x-circle-fill", "bi-exclamation-triangle-fill", "bi-info-circle-fill", "bi-bell-fill");
+		toastHeader.classList.remove(
+			"bg-success",
+			"bg-danger",
+			"bg-warning",
+			"bg-info",
+			"bg-primary"
+		);
+		toastIcon.classList.remove(
+			"bi-check-circle-fill",
+			"bi-x-circle-fill",
+			"bi-exclamation-triangle-fill",
+			"bi-info-circle-fill",
+			"bi-bell-fill"
+		);
 		toastBody.className = "card-body bg-light text-dark";
 
 		// Define ícone, cor do header e título conforme o tipo
@@ -432,9 +492,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		toastBootstrap.show();
 
 		// Evento ao fechar
-		toastEl.addEventListener('hidden.bs.toast', () => {
+		toastEl.addEventListener("hidden.bs.toast", () => {
 			console.log("Toast fechado.");
 		});
 	}
-
 });
