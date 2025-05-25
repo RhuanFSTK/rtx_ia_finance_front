@@ -85,8 +85,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		e.preventDefault();
 
 		const descricao = document.getElementById('descricao').value;
+		console.log(descricao)
 		const formData = new FormData();
 		formData.append('descricao', descricao);
+
+		for (const [key, value] of formData.entries()) {
+			console.log(`${key}:`, value);
+		}
+
+		showLoading();
 
 		const { ok, data } = await enviarArquivoParaAPI('https://rtxapi.up.railway.app/registro/', formData);
 
@@ -100,6 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		const data = await response.json();
+
+		console.log(data);
+
 		hideLoading();
 
 		if (response.ok && data.gpt) {
