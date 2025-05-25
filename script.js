@@ -252,6 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Envia o áudio gravado para transcrição via API
 	async function enviarGravacao() {
+		console.log("Eviando gravação para API")
 		waveformContainer.classList.add("collapse");
 		if (audioChunks.length === 0) {
 			mostrarResultado(
