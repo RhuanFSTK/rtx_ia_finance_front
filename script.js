@@ -83,14 +83,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Função corrigida e ajustada para envio de texto para API
 	async function enviarTexto(event) {
 		event.preventDefault();
+		showLoading();
 
 		const descricao = document.getElementById('descricao').value;
 		const formData = new FormData();
 		formData.append('descricao', descricao);
 
-		const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/registro/', formData);
-
+		const { ok, data } = await enviarArquivoParaAPI('https://rtxapi.up.railway.app/registro/', formData);
 		if (ok) {
+			hideLoading();
 			resultadoTexto.innerHTML = `
 				<p><strong>Descrição:</strong> ${data.descricao}</p>
 				<p><strong>Classificação:</strong> ${data.classificacao}</p>
