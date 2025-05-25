@@ -108,6 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		hideLoading();
 		cardResultado.classList.add("d-none");
+		document.getElementById("descricao").value = '';	
+
+
 
 		if (ok && data.Agente) {
 			showToast({
@@ -367,9 +370,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// Limpa classes antigas
 		toastHeader.className =
-			"card-header d-flex align-items-center justify-content-between";
+			"card-header text-white d-flex align-items-center justify-content-between";
 		toastIcon.className = "bi me-2"; // só a base
-		toastBody.className = "card-body bg-light";
+		toastBody.className = "card-body bg-light text-dark";
 
 		// Define ícone, cor do header e título conforme o tipo
 		switch (type) {
@@ -384,6 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			case "warning":
 				toastHeader.classList.add("bg-warning");
 				toastIcon.classList.add("bi-exclamation-triangle-fill");
+				toastBody.classList.add("text-dark"); // texto escuro no body amarelo claro
 				break;
 			case "info":
 				toastHeader.classList.add("bg-info");
