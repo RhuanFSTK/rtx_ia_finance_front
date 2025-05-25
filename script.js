@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Envia texto do formulário para API e mostra resposta GPT
 	async function enviarTexto(event) {
-		e.preventDefault();
+		event.preventDefault();
 
 		const descricao = document.getElementById('descricao').value;
 		console.log(descricao)
@@ -138,43 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			`<strong>Erro na requisição:</strong> ${err.message}`
 		);
 	}
-
-	// // *** Ajuste no handler do formulário de texto ***
-	// async function enviarTexto(event) {
-	// 	event.preventDefault(); // corrigido: troca e -> event
-	// 	showLoading();
-
-	// 	const descricao = document.getElementById("descricao").value;
-	// 	const formData = new FormData();
-	// 	formData.append("descricao", descricao);
-
-	// 	const { ok, data } = await enviarArquivoParaAPI(
-	// 		"https://rtxapi.up.railway.app/registro/",
-	// 		formData
-	// 	);
-
-	// 	hideLoading();
-
-	// 	if (ok && data.salvo) {
-	// 		const { descricao, classificacao, valor } = data.gpt;
-	// 		mostrarResultado(
-	// 			resultadoTexto,
-	// 			"success",
-	// 			`<strong>Registrado com sucesso!</strong><br>
-	// 			 <strong>Descrição:</strong> ${descricao}<br>
-	// 			 <strong>Classificação:</strong> ${classificacao}<br>
-	// 			 <strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
-	// 		);
-	// 		textoForm.reset();
-	// 	} else {
-	// 		const errorMsg = formatarErroApi(data);
-	// 		mostrarResultado(
-	// 			resultadoTexto,
-	// 			"danger",
-	// 			`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-	// 		);
-	// 	}
-	// }
 
 	// Inicia ou para gravação de áudio
 	async function toggleGravacao() {
