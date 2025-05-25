@@ -97,6 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		event.preventDefault(); // Impede reload da página no envio do formulário
 		showLoading(); // Exibe spinner
 
+		btnEnviar = document.getElementById("btnEnviaForm");
+		btnEnviar.disabled = true; // 👈 Desativa o botão
+
 		const descricao = document.getElementById("descricao").value;
 		const formData = new FormData();
 		formData.append("descricao", descricao);
@@ -110,8 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		cardResultado.classList.add("d-none");
 		document.getElementById("descricao").value = '';	
 
-
-
 		if (ok && data.Agente) {
 			showToast({
 				type: "success",
@@ -122,6 +123,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
 				`,
 			});
+
+			btnEnviar.disabled = false; // ✅ Reativa o botão
 		} else {
 			showToast({
 				type: "error",
@@ -130,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p>${data.detail || "Erro inesperado. Tente novamente."}</p>
 				`,
 			});
+			btnEnviar.disabled = false; // ✅ Reativa o botão
 		}
 	}
 
