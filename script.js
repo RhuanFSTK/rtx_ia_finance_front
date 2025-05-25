@@ -137,6 +137,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			btnEnviar.disabled = false; // ✅ Reativa o botão
 		}
+
+		resetGravacao();
 	}
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
@@ -287,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
 				`,
 			});
-			location.reload()
+			location.reload();
 		} else {
 			const errorMsg = formatarErroApi(data);
 			showToast({
@@ -299,15 +301,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
 				`,
 			});
-			location.reload()
+			location.reload();
 		}
 
-		// Reset estado da gravação após envio
-		audioChunks = [];
-		controlesGravacao.classList.add("d-none");
-		resultadoAudioImagem.classList.add("d-none");
-		gravarBtn.textContent = "🎙 Gravar Áudio";
-		gravarBtn.disabled = false;
+		resetGravacao();
 
 		// Reset wavesurfer (libera recursos e reinicia)
 		if (window.waveSurfer) {
@@ -318,6 +315,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Permite uma nova gravação
 		mediaRecorder = null;
 		stream = null;
+	}
+
+	function resetGravacao() { 
+		// Reset estado da gravação após envio
+		audioChunks = [];
+		controlesGravacao.classList.add("d-none");
+		resultadoAudioImagem.classList.add("d-none");
+		gravarBtn.textContent = "🎙 Gravar Áudio";
+		gravarBtn.disabled = false;
 	}
 
 	// Cancela a gravação atual e limpa a UI relacionada
