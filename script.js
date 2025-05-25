@@ -254,6 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			);
 			return;
 		}
+
 		showLoading();
 
 		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
@@ -266,6 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 
 		hideLoading();
+		cardResultado.classList.add("d-none");
 
 		if (ok) {
 			showToast({
