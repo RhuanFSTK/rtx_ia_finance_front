@@ -215,11 +215,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				// Para todos os tracks de áudio
 				if (stream) stream.getTracks().forEach((track) => track.stop());
-
-				// Para o microfone do WaveSurfer
-				if (window.waveSurfer && window.waveSurfer.microphone) {
-					window.waveSurfer.microphone.stop();
-				}
 			};
 
 			mediaRecorder.start();
@@ -294,12 +289,23 @@ document.addEventListener("DOMContentLoaded", () => {
 			setTimeout(() => location.reload(), 4000);
 		}
 
+		// Reset estado da gravação após envio
 		audioChunks = [];
 		controlesGravacao.classList.add("d-none");
 		waveformContainer.classList.add("collapse");
 		resultadoAudioImagem.classList.add("d-none");
 		gravarBtn.textContent = "🎙 Gravar Áudio";
 		gravarBtn.disabled = false;
+
+		// Reset wavesurfer (libera recursos e reinicia)
+		if (window.waveSurfer) {
+			window.waveSurfer.destroy();
+			window.waveSurfer = null;
+		}
+
+		// Permite uma nova gravação
+		mediaRecorder = null;
+		stream = null;
 	}
 
 	// Cancela a gravação atual e limpa a UI relacionada
