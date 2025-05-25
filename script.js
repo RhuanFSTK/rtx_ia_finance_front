@@ -137,8 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			btnEnviar.disabled = false; // ✅ Reativa o botão
 		}
-
-		resetGravacao();
+		location.reload();
 	}
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
@@ -317,8 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		stream = null;
 	}
 
+	// Reset estado da gravação após envio
 	function resetGravacao() { 
-		// Reset estado da gravação após envio
 		audioChunks = [];
 		controlesGravacao.classList.add("d-none");
 		resultadoAudioImagem.classList.add("d-none");
