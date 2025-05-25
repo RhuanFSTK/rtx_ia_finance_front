@@ -232,11 +232,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			);
 		}
 
-		console.log({
-			cardResultado: cardResultado.classList.toString(),
-			waveformContainer: waveformContainer.classList.toString(),
-			controlesGravacao: controlesGravacao.classList.toString(),
-		});
+		// console.log({
+		// 	cardResultado: cardResultado.classList.toString(),
+		// 	waveformContainer: waveformContainer.classList.toString(),
+		// 	controlesGravacao: controlesGravacao.classList.toString(),
+		// });
 	}
 
 	// Envia o áudio gravado para transcrição via API
