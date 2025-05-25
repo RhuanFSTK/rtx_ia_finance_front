@@ -85,57 +85,18 @@ document.addEventListener("DOMContentLoaded", () => {
 		event.preventDefault();
 
 		const descricao = document.getElementById('descricao').value;
-		console.log('Enviando descrição:', descricao);
-
 		const formData = new FormData();
 		formData.append('descricao', descricao);
 
-		for (const [key, value] of formData.entries()) {
-			console.log(`${key}:`, value);
-		}
+		const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/registro/', formData);
 
-		showLoading();
-
-		try {
-			const { ok, data } = await enviarArquivoParaAPI('https://rtxapi.up.railway.app/registro/', formData);
-
-			if (ok && data) {
-				// Se a API retorna o objeto 'gpt' com os dados, usamos ele para mostrar o resultado
-				if (data.gpt) {
-					const { descricao, classificacao, valor } = data.gpt;
-					mostrarResultado(
-						resultadoTexto,
-						"success",
-						`<strong>Registrado com sucesso!</strong><br>
-						<strong>Descrição:</strong> ${descricao}<br>
-						<strong>Classificação:</strong> ${classificacao}<br>
-						<strong>Valor:</strong> R$ ${parseFloat(valor).toFixed(2)}`
-					);
-				} else {
-					// Caso não tenha o 'gpt', mostramos o que vier direto
-					mostrarResultado(
-						resultadoTexto,
-						"success",
-						`<p><strong>Descrição:</strong> ${data.descricao || '-'}<br>
-						<strong>Classificação:</strong> ${data.classificacao || '-'}</p>`
-					);
-				}
-			} else {
-				const errorMsg = formatarErroApi(data);
-				mostrarResultado(
-					resultadoTexto,
-					"danger",
-					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-				);
-			}
-		} catch (err) {
-			mostrarResultado(
-				resultadoTexto,
-				"danger",
-				`<strong>Erro na requisição:</strong> ${err.message}`
-			);
-		} finally {
-			hideLoading();
+		if (ok) {
+			resultadoTexto.innerHTML = `
+				<p><strong>Descrição:</strong> ${data.descricao}</p>
+				<p><strong>Classificação:</strong> ${data.classificacao}</p>
+			`;
+		} else {
+		resultadoTexto.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
 		}
 	}
 
