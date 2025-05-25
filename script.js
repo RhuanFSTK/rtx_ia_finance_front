@@ -265,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		showLoading();
 
-		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+		const blob = new Blob(audioChunks, { type: mimeType });
 		const formData = new FormData();
 		formData.append("file", audioBlob);
 
