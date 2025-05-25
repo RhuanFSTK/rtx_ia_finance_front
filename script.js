@@ -164,7 +164,15 @@ document.addEventListener("DOMContentLoaded", () => {
 		try {
 			// Permissão do microfone ON
 			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			mediaRecorder = new MediaRecorder(stream);
+
+			const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+				? "audio/webm;codecs=opus"
+				: MediaRecorder.isTypeSupported("audio/mp4")
+				? "audio/mp4"
+				: "";
+
+			mediaRecorder = new MediaRecorder(stream, { mimeType });
+
 			audioChunks = [];
 
 			// UI ativada
@@ -205,9 +213,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			};
 
 			mediaRecorder.onstop = () => {
-				const blob = new Blob(audioChunks, { type: "audio/webm" });
+				const blob = new Blob(audioChunks, { type: mimeType });
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
+
+				console.log("Tamanho do blob:", blob.size);
+				console.log("Tipo do blob:", blob.type);
 
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
@@ -241,6 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Envia o áudio gravado para transcrição via API
 	async function enviarGravacao() {
+		waveformContainer.classList.add("collapse");
 		if (audioChunks.length === 0) {
 			mostrarResultado(
 				resultadoAudioImagem,
@@ -292,7 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Reset estado da gravação após envio
 		audioChunks = [];
 		controlesGravacao.classList.add("d-none");
-		waveformContainer.classList.add("collapse");
 		resultadoAudioImagem.classList.add("d-none");
 		gravarBtn.textContent = "🎙 Gravar Áudio";
 		gravarBtn.disabled = false;
