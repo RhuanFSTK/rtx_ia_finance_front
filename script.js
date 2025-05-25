@@ -1,148 +1,440 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const textoForm = document.getElementById('texto-form');
-  const resultadoTexto = document.getElementById('resultado-texto');
-  const resultadoAudioImagem = document.getElementById('resultado-audio-imagem');
+document.addEventListener("DOMContentLoaded", () => {
+	// Referência aos elementos DOM (HTML) da página
+	const cardResultado = document.getElementById("cardResultado");
+	const resultadoTexto = document.getElementById("resultado-texto");
+	const resultadoAudioImagem = document.getElementById(
+		"resultado-audio-imagem"
+	);
+	const loadingSpinner = document.getElementById("loading-spinner");
+	const waveformContainer = document.getElementById("waveform-container");
+	const videoElement = document.getElementById("video");
+	const canvasElement = document.getElementById("canvas");
+	const gravarBtn = document.getElementById("gravar-btn");
+	const capturaFotoBtn = document.getElementById("captura-foto-btn");
+	const carregarBtn = document.getElementById("carregar-btn");
+	const arquivoInput = document.getElementById("arquivo-input");
+	const textoForm = document.getElementById("texto-form");
+	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
+	const btnCancelarGravacao = document.getElementById(
+		"btn-cancelar-gravacao"
+	);
+	const controlesGravacao = document.getElementById("controles-gravacao");
 
-  const gravarBtn = document.getElementById('gravar-btn');
-  const carregarBtn = document.getElementById('carregar-btn');
-  const audioInput = document.getElementById('audio');
-  const imagemInput = document.getElementById('imagem');
+	// Eventos de clique e envio associados aos botões e formulários
+	gravarBtn.addEventListener("click", toggleGravacao);
+	btnEnviarGravacao.addEventListener("click", enviarGravacao);
+	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
+	capturaFotoBtn.addEventListener("click", tirarFoto);
+	carregarBtn.addEventListener("click", () => arquivoInput.click());
+	arquivoInput.addEventListener("change", carregarArquivo);
+	textoForm.addEventListener("submit", enviarTexto);
 
-  const capturaFotoBtn = document.getElementById('captura-foto-btn');
-  const videoElement = document.getElementById('video');
-  const canvasElement = document.getElementById('canvas');
+	// Variáveis de controle da gravação de áudio
+	let mediaRecorder;
+	let audioChunks = [];
+	let stream;
 
-  let mediaRecorder;
-  let audioChunks = [];
+	// Mostra o spinner de carregamento e exibe o card de resultado
+	function showLoading() {
+		loadingSpinner.classList.remove("d-none");
+		cardResultado.classList.remove("d-none");
+		cardResultado.classList.add("show");
+		cardResultado.classList.remove("collapse");
+	}
 
-  async function enviarArquivoParaAPI(endpoint, formData) {
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await response.json();
-      return { ok: response.ok, data };
-    } catch (error) {
-      return { ok: false, data: { detail: error.message } };
-    }
-  }
+	// Oculta o spinner de carregamento
+	function hideLoading() {
+		loadingSpinner.classList.add("d-none");
+	}
 
-  textoForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+	// Formata a mensagem de erro da API para exibição no frontend
+	function formatarErroApi(data) {
+		if (!data) return "Erro desconhecido";
+		if (typeof data === "string") return data;
+		if (data.detail) {
+			if (typeof data.detail === "object") {
+				try {
+					return JSON.stringify(data.detail, null, 2);
+				} catch {
+					return "[Erro ao converter objeto]";
+				}
+			}
+			return data.detail;
+		}
+		try {
+			return JSON.stringify(data, null, 2);
+		} catch {
+			return "Erro desconhecido ao converter objeto";
+		}
+	}
 
-    const descricao = document.getElementById('descricao').value;
-    const formData = new FormData();
-    formData.append('descricao', descricao);
+	// Exibe mensagens estilizadas (alertas de sucesso, erro etc.) no container indicado
+	function mostrarResultado(container, tipo, mensagem) {
+		container.className = "";
+		container.classList.add("alert", `alert-${tipo}`, "fade", "show");
+		container.innerHTML = mensagem;
+		container.classList.remove("d-none");
+		cardResultado.classList.add("show");
+		cardResultado.classList.remove("collapse");
+	}
 
-    const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/registro/', formData);
+	// Função genérica para enviar qualquer FormData para um endpoint da API
+	async function enviarArquivoParaAPI(endpoint, formData) {
+		try {
+			const response = await fetch(endpoint, {
+				method: "POST",
+				body: formData,
+			});
+			const data = await response.json();
+			return { ok: response.ok, data };
+		} catch (error) {
+			return { ok: false, data: { detail: error.message } };
+		}
+	}
 
-    if (ok) {
-      resultadoTexto.innerHTML = `
-        <p><strong>Descrição:</strong> ${data.descricao}</p>
-        <p><strong>Classificação:</strong> ${data.classificacao}</p>
-      `;
-    } else {
-      resultadoTexto.innerHTML = `<p style="color:red;">Erro: ${data.detail || 'Erro desconhecido'}</p>`;
-    }
-  });
+	// Envia texto digitado pelo usuário para a API e trata o retorno com UI moderna (toast)
+	async function enviarTexto(event) {
+		event.preventDefault(); // Impede reload da página no envio do formulário
+		showLoading(); // Exibe spinner
 
-  gravarBtn.addEventListener('click', async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
+		btnEnviar = document.getElementById("btnEnviaForm");
+		btnEnviar.disabled = true; // 👈 Desativa o botão
 
-      audioChunks = [];
+		const descricao = document.getElementById("descricao").value;
+		const formData = new FormData();
+		formData.append("descricao", descricao);
 
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
-      };
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxapi.up.railway.app/registro/",
+			formData
+		);
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const formData = new FormData();
-        formData.append('file', audioBlob); // Corrigido para 'file'
+		hideLoading();
+		cardResultado.classList.add("d-none");
+		document.getElementById("descricao").value = '';	
 
-        const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/audio/', formData);
+		if (ok && data.Agente) {
+			showToast({
+				type: "success",
+				title: "Gasto Classificado com Sucesso",
+				message: `
+					<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
+				`,
+			});
 
-        if (ok) {
-          resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
-        } else {
-          resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
-        }
-      };
+			btnEnviar.disabled = false; // ✅ Reativa o botão
+		} else {
+			showToast({
+				type: "error",
+				title: "Erro",
+				message: `
+					<p>${data.detail || "Erro inesperado. Tente novamente."}</p>
+				`,
+			});
+			btnEnviar.disabled = false; // ✅ Reativa o botão
+		}
+	}
 
-      mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 5000);
-    } catch (err) {
-      resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro ao acessar microfone: ${err.message}</p>`;
-    }
-  });
+	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
+	async function toggleGravacao() {
+		if (mediaRecorder && mediaRecorder.state === "recording") {
+			mediaRecorder.stop();
+			gravarBtn.textContent = "🎙 Gravar Áudio";
+			gravarBtn.disabled = false;
+			btnEnviarGravacao.disabled = false;
+			btnCancelarGravacao.disabled = false;
+			return;
+		}
 
-  carregarBtn.addEventListener('click', () => {
-    const audioVisible = audioInput.style.display !== "none";
-    audioInput.style.display = audioVisible ? "none" : "block";
-    imagemInput.style.display = audioVisible ? "block" : "none";
-  });
+		try {
+			// Solicita permissão para acessar o microfone
+			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			mediaRecorder = new MediaRecorder(stream);
+			audioChunks = [];
 
-  audioInput.addEventListener('change', async () => {
-    const file = audioInput.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file); // Corrigido para 'file'
+			resultadoAudioImagem.classList.add("d-none");
+			cardResultado.classList.add("show");
+			cardResultado.classList.remove("collapse");
 
-      const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/audio/', formData);
-      if (ok) {
-        resultadoAudioImagem.innerHTML = `<p><strong>Transcrição:</strong> ${data.texto}</p>`;
-      } else {
-        resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
-      }
-    }
-  });
+			// Inicializa visualização de áudio
+			waveformContainer.classList.remove("collapse");
+			waveformContainer.classList.add("show");
 
-  imagemInput.addEventListener('change', async () => {
-    const file = imagemInput.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file); // Corrigido para 'file'
+			if (window.waveSurfer) window.waveSurfer.destroy();
+			window.waveSurfer = WaveSurfer.create({
+				container: "#waveform",
+				waveColor: "#4F46E5",
+				progressColor: "#6366F1",
+				height: 100,
+			});
 
-      const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/imagem/', formData);
-      if (ok) {
-        resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
-      } else {
-        resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
-      }
-    }
-  });
+			// Captura os dados de áudio em tempo real
+			mediaRecorder.ondataavailable = (event) => {
+				audioChunks.push(event.data);
+				const blob = new Blob(audioChunks, { type: "audio/webm" });
+				const url = URL.createObjectURL(blob);
+				window.waveSurfer.load(url);
+			};
 
-  capturaFotoBtn.addEventListener('click', async () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoElement.srcObject = stream;
-      videoElement.style.display = 'block';
+			mediaRecorder.onstop = () => {
+				btnEnviarGravacao.disabled = false;
+				btnCancelarGravacao.disabled = false;
+				gravarBtn.disabled = false;
+				if (stream) stream.getTracks().forEach((track) => track.stop());
+			};
 
-      setTimeout(async () => {
-        const context = canvasElement.getContext('2d');
-        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-        const base64Image = canvasElement.toDataURL('image/jpeg').split(',')[1];
+			mediaRecorder.start();
+			gravarBtn.textContent = "⏹ Parar Gravação";
+			gravarBtn.disabled = false;
 
-        const blob = await (await fetch(`data:image/jpeg;base64,${base64Image}`)).blob();
-        const formData = new FormData();
-        formData.append('file', blob); // Corrigido para 'file'
+			controlesGravacao.classList.remove("d-none");
+			btnEnviarGravacao.disabled = true;
+			btnCancelarGravacao.disabled = true;
+		} catch (err) {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro ao acessar microfone:</strong> ${err.message}`
+			);
+		}
+	}
 
-        const { ok, data } = await enviarArquivoParaAPI('https://rtxfinance.up.railway.app/imagem/', formData);
+	// Envia o áudio gravado para transcrição via API
+	async function enviarGravacao() {
+		if (audioChunks.length === 0) {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"warning",
+				"Nenhuma gravação para enviar."
+			);
+			return;
+		}
+		showLoading();
 
-        if (ok) {
-          resultadoAudioImagem.innerHTML = `<p><strong>Resultado da Análise:</strong> ${data.resultado}</p>`;
-        } else {
-          resultadoAudioImagem.innerHTML = `<p style="color:red;">Erro: ${data.detail}</p>`;
-        }
+		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+		const formData = new FormData();
+		formData.append("file", audioBlob);
 
-        stream.getTracks().forEach(track => track.stop());
-        videoElement.style.display = 'none';
-      }, 1000);
-    } else {
-      alert('A câmera não é suportada neste dispositivo.');
-    }
-  });
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxapi.up.railway.app/audio/",
+			formData
+		);
+
+		hideLoading();
+
+		if (ok) {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"success",
+				`<strong>Transcrição:</strong> ${data.transcricao}`
+			);
+		} else {
+			const errorMsg = formatarErroApi(data);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+			);
+		}
+
+		audioChunks = [];
+		controlesGravacao.classList.add("d-none");
+		waveformContainer.classList.add("collapse");
+		gravarBtn.textContent = "🎙 Gravar Áudio";
+	}
+
+	// Cancela a gravação atual e limpa a UI relacionada
+	function cancelarGravacao() {
+		if (mediaRecorder && mediaRecorder.state === "recording") {
+			mediaRecorder.stop();
+		}
+		if (stream) {
+			stream.getTracks().forEach((track) => track.stop());
+		}
+		audioChunks = [];
+		controlesGravacao.classList.add("d-none");
+		waveformContainer.classList.add("collapse");
+		resultadoAudioImagem.classList.add("d-none");
+		gravarBtn.textContent = "🎙 Gravar Áudio";
+		gravarBtn.disabled = false;
+	}
+
+	// Captura imagem da webcam e envia para análise da API
+	async function tirarFoto() {
+		try {
+			showLoading();
+
+			const streamVideo = await navigator.mediaDevices.getUserMedia({
+				video: true,
+			});
+			videoElement.srcObject = streamVideo;
+			videoElement.play();
+
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			const context = canvasElement.getContext("2d");
+			canvasElement.width = videoElement.videoWidth || 320;
+			canvasElement.height = videoElement.videoHeight || 240;
+
+			videoElement.classList.remove("d-none");
+			canvasElement.classList.remove("d-none");
+
+			context.drawImage(
+				videoElement,
+				0,
+				0,
+				canvasElement.width,
+				canvasElement.height
+			);
+
+			const blob = await new Promise((resolve) =>
+				canvasElement.toBlob(resolve, "image/jpeg")
+			);
+
+			const formData = new FormData();
+			formData.append("file", blob, "foto.jpg");
+
+			const { ok, data } = await enviarArquivoParaAPI(
+				"https://rtxapi.up.railway.app/imagem/",
+				formData
+			);
+
+			if (ok) {
+				mostrarResultado(
+					resultadoAudioImagem,
+					"success",
+					`<strong>Resultado da Análise:</strong> ${data.resultado}`
+				);
+			} else {
+				const errorMsg = formatarErroApi(data);
+				mostrarResultado(
+					resultadoAudioImagem,
+					"danger",
+					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+				);
+			}
+
+			streamVideo.getTracks().forEach((track) => track.stop());
+			videoElement.classList.add("d-none");
+			canvasElement.classList.add("d-none");
+		} catch (err) {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro ao capturar foto:</strong> ${err.message}`
+			);
+		} finally {
+			hideLoading();
+		}
+	}
+
+	// Permite selecionar um arquivo do computador e envia a imagem para análise
+	async function carregarArquivo() {
+		if (arquivoInput.files.length === 0) return;
+
+		showLoading();
+
+		const file = arquivoInput.files[0];
+		const formData = new FormData();
+		formData.append("file", file);
+
+		const { ok, data } = await enviarArquivoParaAPI(
+			"https://rtxapi.up.railway.app/imagem/",
+			formData
+		);
+
+		if (ok) {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"success",
+				`<strong>Resultado da Análise:</strong> ${data.resultado}`
+			);
+		} else {
+			const errorMsg = formatarErroApi(data);
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+			);
+		}
+
+		arquivoInput.value = ""; // Limpa o input para permitir novo upload
+		hideLoading();
+	}
+
+	function showToast({ type = "success", title = "", message = "", delay = 5000 }) {
+		const toastEl = document.getElementById("liveToast");
+		const toastCard = document.getElementById("toastCard");
+		const toastHeader = document.getElementById("toastHeader");
+		const toastIcon = document.getElementById("toastIcon");
+		const toastTitle = document.getElementById("toastTitle");
+		const toastBody = document.getElementById("toastBody");
+
+		// Limpa classes antigas
+		toastHeader.classList.remove("bg-success", "bg-danger", "bg-warning", "bg-info", "bg-primary");
+		toastIcon.classList.remove("bi-check-circle-fill", "bi-x-circle-fill", "bi-exclamation-triangle-fill", "bi-info-circle-fill", "bi-bell-fill");
+		toastBody.className = "card-body bg-light text-dark";
+
+		// Define ícone, cor do header e título conforme o tipo
+		switch (type) {
+			case "success":
+				toastHeader.classList.add("bg-success");
+				toastIcon.classList.add("bi-check-circle-fill");
+				break;
+			case "error":
+				toastHeader.classList.add("bg-danger");
+				toastIcon.classList.add("bi-x-circle-fill");
+				break;
+			case "warning":
+				toastHeader.classList.add("bg-warning");
+				toastIcon.classList.add("bi-exclamation-triangle-fill");
+				break;
+			case "info":
+				toastHeader.classList.add("bg-info");
+				toastIcon.classList.add("bi-info-circle-fill");
+				break;
+			default:
+				toastHeader.classList.add("bg-primary");
+				toastIcon.classList.add("bi-bell-fill");
+		}
+
+		// Define texto do título e corpo da mensagem
+		toastTitle.textContent = title;
+		toastBody.innerHTML = message;
+
+		// // Sons por tipo de toast
+		// const sounds = {
+		// 	success: 'success.mp3',
+		// 	error: 'error.mp3',
+		// 	warning: 'warning.mp3',
+		// 	info: 'info.mp3',
+		// 	default: 'notification.mp3',
+		// };
+
+		// const soundFile = `./sounds/${sounds[type] || sounds.default}`;
+		// const audio = new Audio(soundFile);
+
+		// // Garante que o navegador pode tocar o som
+		// audio.addEventListener('canplaythrough', () => {
+		// 	audio.play().catch((err) => {
+		// 		console.warn("Erro ao tocar som:", err.message);
+		// 	});
+		// });
+
+		// audio.addEventListener('error', (e) => {
+		// 	console.warn("Erro ao carregar o áudio:", soundFile, e);
+		// });
+
+		// Mostrar toast (Bootstrap 5) com delay customizado
+		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
+		toastBootstrap.show();
+
+		// Evento ao fechar
+		toastEl.addEventListener('hidden.bs.toast', () => {
+			console.log("Toast fechado.");
+		});
+	}
+
 });
