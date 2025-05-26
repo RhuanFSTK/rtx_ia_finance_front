@@ -16,9 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	const canvasElement = document.getElementById("canvas");
 
 	const gravarBtn = document.getElementById("gravar-btn");
-	const capturaFotoBtn = document.getElementById("captura-foto-btn");
-	const carregarBtn = document.getElementById("carregar-btn");
-	const arquivoInput = document.getElementById("arquivo-input");
+	// const capturaFotoBtn = document.getElementById("captura-foto-btn");
+	// const carregarBtn = document.getElementById("carregar-btn");
+	// const arquivoInput = document.getElementById("arquivo-input");
 	const textoForm = document.getElementById("texto-form");
 
 	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
@@ -31,9 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	gravarBtn.addEventListener("click", toggleGravacao);
 	btnEnviarGravacao.addEventListener("click", enviarGravacao);
 	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
-	capturaFotoBtn.addEventListener("click", tirarFoto);
-	carregarBtn.addEventListener("click", () => arquivoInput.click());
-	arquivoInput.addEventListener("change", carregarArquivo);
+	// capturaFotoBtn.addEventListener("click", tirarFoto);
+	// carregarBtn.addEventListener("click", () => arquivoInput.click());
+	// arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 
 	const toastData = sessionStorage.getItem("toastData");
@@ -359,107 +359,107 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// Captura imagem da webcam e envia para análise da API
-	async function tirarFoto() {
-		try {
-			showLoading();
+	// async function tirarFoto() {
+	// 	try {
+	// 		showLoading();
 
-			const streamVideo = await navigator.mediaDevices.getUserMedia({
-				video: true,
-			});
-			videoElement.srcObject = streamVideo;
-			videoElement.play();
+	// 		const streamVideo = await navigator.mediaDevices.getUserMedia({
+	// 			video: true,
+	// 		});
+	// 		videoElement.srcObject = streamVideo;
+	// 		videoElement.play();
 
-			await new Promise((resolve) => setTimeout(resolve, 1000));
+	// 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
-			const context = canvasElement.getContext("2d");
-			canvasElement.width = videoElement.videoWidth || 320;
-			canvasElement.height = videoElement.videoHeight || 240;
+	// 		const context = canvasElement.getContext("2d");
+	// 		canvasElement.width = videoElement.videoWidth || 320;
+	// 		canvasElement.height = videoElement.videoHeight || 240;
 
-			videoElement.classList.remove("d-none");
-			canvasElement.classList.remove("d-none");
+	// 		videoElement.classList.remove("d-none");
+	// 		canvasElement.classList.remove("d-none");
 
-			context.drawImage(
-				videoElement,
-				0,
-				0,
-				canvasElement.width,
-				canvasElement.height
-			);
+	// 		context.drawImage(
+	// 			videoElement,
+	// 			0,
+	// 			0,
+	// 			canvasElement.width,
+	// 			canvasElement.height
+	// 		);
 
-			const blob = await new Promise((resolve) =>
-				canvasElement.toBlob(resolve, "image/jpeg")
-			);
+	// 		const blob = await new Promise((resolve) =>
+	// 			canvasElement.toBlob(resolve, "image/jpeg")
+	// 		);
 
-			const formData = new FormData();
-			formData.append("file", blob, "foto.jpg");
+	// 		const formData = new FormData();
+	// 		formData.append("file", blob, "foto.jpg");
 
-			const { ok, data } = await enviarArquivoParaAPI(
-				"https://rtxapi.up.railway.app/imagem/",
-				formData
-			);
+	// 		const { ok, data } = await enviarArquivoParaAPI(
+	// 			"https://rtxapi.up.railway.app/imagem/",
+	// 			formData
+	// 		);
 
-			if (ok) {
-				mostrarResultado(
-					resultadoAudioImagem,
-					"success",
-					`<strong>Resultado da Análise:</strong> ${data.resultado}`
-				);
-			} else {
-				const errorMsg = formatarErroApi(data);
-				mostrarResultado(
-					resultadoAudioImagem,
-					"danger",
-					`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-				);
-			}
+	// 		if (ok) {
+	// 			mostrarResultado(
+	// 				resultadoAudioImagem,
+	// 				"success",
+	// 				`<strong>Resultado da Análise:</strong> ${data.resultado}`
+	// 			);
+	// 		} else {
+	// 			const errorMsg = formatarErroApi(data);
+	// 			mostrarResultado(
+	// 				resultadoAudioImagem,
+	// 				"danger",
+	// 				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+	// 			);
+	// 		}
 
-			streamVideo.getTracks().forEach((track) => track.stop());
-			videoElement.classList.add("d-none");
-			canvasElement.classList.add("d-none");
-		} catch (err) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro ao capturar foto:</strong> ${err.message}`
-			);
-		} finally {
-			hideLoading();
-		}
-	}
+	// 		streamVideo.getTracks().forEach((track) => track.stop());
+	// 		videoElement.classList.add("d-none");
+	// 		canvasElement.classList.add("d-none");
+	// 	} catch (err) {
+	// 		mostrarResultado(
+	// 			resultadoAudioImagem,
+	// 			"danger",
+	// 			`<strong>Erro ao capturar foto:</strong> ${err.message}`
+	// 		);
+	// 	} finally {
+	// 		hideLoading();
+	// 	}
+	// }
 
-	// Permite selecionar um arquivo do computador e envia a imagem para análise
-	async function carregarArquivo() {
-		if (arquivoInput.files.length === 0) return;
+	// // Permite selecionar um arquivo do computador e envia a imagem para análise
+	// async function carregarArquivo() {
+	// 	if (arquivoInput.files.length === 0) return;
 
-		showLoading();
+	// 	showLoading();
 
-		const file = arquivoInput.files[0];
-		const formData = new FormData();
-		formData.append("file", file);
+	// 	const file = arquivoInput.files[0];
+	// 	const formData = new FormData();
+	// 	formData.append("file", file);
 
-		const { ok, data } = await enviarArquivoParaAPI(
-			"https://rtxapi.up.railway.app/imagem/",
-			formData
-		);
+	// 	const { ok, data } = await enviarArquivoParaAPI(
+	// 		"https://rtxapi.up.railway.app/imagem/",
+	// 		formData
+	// 	);
 
-		if (ok) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"success",
-				`<strong>Resultado da Análise:</strong> ${data.resultado}`
-			);
-		} else {
-			const errorMsg = formatarErroApi(data);
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-			);
-		}
+	// 	if (ok) {
+	// 		mostrarResultado(
+	// 			resultadoAudioImagem,
+	// 			"success",
+	// 			`<strong>Resultado da Análise:</strong> ${data.resultado}`
+	// 		);
+	// 	} else {
+	// 		const errorMsg = formatarErroApi(data);
+	// 		mostrarResultado(
+	// 			resultadoAudioImagem,
+	// 			"danger",
+	// 			`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
+	// 		);
+	// 	}
 
-		arquivoInput.value = ""; // Limpa o input para permitir novo upload
-		hideLoading();
-	}
+	// 	arquivoInput.value = ""; // Limpa o input para permitir novo upload
+	// 	hideLoading();
+	// }
 
 	function showToast({type = "success", title = "", message = "", delay = 3000,}) {
 		const toastEl = document.getElementById("liveToast");
@@ -517,28 +517,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		/* ========================================= */
 
-		// Sons por tipo de toast
-		const sounds = {
-			success: 'success.mp3',
-			error: 'error.mp3',
-			warning: 'warning.mp3',
-			info: 'info.mp3',
-			default: 'notification.mp3',
-		};
+		// // Sons por tipo de toast
+		// const sounds = {
+		// 	success: 'success.mp3',
+		// 	error: 'error.mp3',
+		// 	warning: 'warning.mp3',
+		// 	info: 'info.mp3',
+		// 	default: 'notification.mp3',
+		// };
 
-		const soundFile = `./sounds/${sounds[type] || sounds.default}`;
-		const audio = new Audio(soundFile);
+		// const soundFile = `./sounds/${sounds[type] || sounds.default}`;
+		// const audio = new Audio(soundFile);
 
-		// Garante que o navegador pode tocar o som
-		audio.addEventListener('canplaythrough', () => {
-			audio.play().catch((err) => {
-				console.warn("Erro ao tocar som:", err.message);
-			});
-		});
+		// // Garante que o navegador pode tocar o som
+		// audio.addEventListener('canplaythrough', () => {
+		// 	audio.play().catch((err) => {
+		// 		console.warn("Erro ao tocar som:", err.message);
+		// 	});
+		// });
 
-		audio.addEventListener('error', (e) => {
-			console.warn("Erro ao carregar o áudio:", soundFile, e);
-		});
+		// audio.addEventListener('error', (e) => {
+		// 	console.warn("Erro ao carregar o áudio:", soundFile, e);
+		// });
 
         /* ====================================================== */
 

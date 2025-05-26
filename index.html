@@ -67,12 +67,12 @@
                     <div class="col-md-4">
                         <button id="gravar-btn" class="btn btn-outline-primary w-100">🎙 Gravar Áudio</button>
                     </div>
-                    <div class="col-md-4">
+                    <!-- <div class="col-md-4">
                         <button id="captura-foto-btn" class="btn btn-outline-success w-100">📸 Capturar Foto</button>
                     </div>
                     <div class="col-md-4">
                         <button id="carregar-btn" class="btn btn-outline-secondary w-100">📂 Carregar Arquivo</button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -115,30 +115,6 @@
                                     <td>R$ 35,90</td>
                                     <td>Alimentação</td>
                                 </tr>
-                                <tr>
-                                    <td>Transporte de ida</td>
-                                    <td>21-03</td>
-                                    <td>R$ 12,50</td>
-                                    <td>Transporte</td>
-                                </tr>
-                                <tr>
-                                    <td>Compra de material de escritório</td>
-                                    <td>25-03</td>
-                                    <td>R$ 45,00</td>
-                                    <td>Escritório</td>
-                                </tr>
-                                <tr>
-                                    <td>Jantar com amigos</td>
-                                    <td>30-03</td>
-                                    <td>R$ 60,00</td>
-                                    <td>Alimentação</td>
-                                </tr>
-                                <tr>
-                                    <td>Uber para reunião</td>
-                                    <td>02-04</td>
-                                    <td>R$ 25,00</td>
-                                    <td>Transporte</td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -174,30 +150,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="./script.js"></script>
-
     <script>
+        
+    $(document).ready(function () {
+        const tabela = $('#tabela-gastos').DataTable();
 
-        $(document).ready(function() {
-            $('#tabela-gastos').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                language: {
-                    lengthMenu: "Mostrar _MENU_ páginas",
-                    zeroRecords: "Nenhum registro encontrado",
-                    info: "Mostrando página _PAGE_ de _PAGES_",
-                    infoEmpty: "Nenhum registro disponível",
-                    infoFiltered: "(filtrado de _MAX_ registros no total)",
-                    search: "Pesquisar:",
-                    paginate: {
-                        first: "Primeira",
-                        last: "Última",
-                        next: "Próxima",
-                        previous: "Anterior"
-                    }
-                }
-            });
+        $.ajax({
+            type: "GET",
+            url: "https://rtxapi.up.railway.app/consulta/",
+            data: {
+                data_inicio: "2025-05-25T00:00:00",
+                data_fim: "2025-05-25T23:59:59"
+            },
+            dataType: "json",
+            success: function (response) {
+                console.log("✅ Resposta recebida:", response);
+
+                tabela.clear(); // limpa tabela antes de inserir os dados
+
+                response.gastos.forEach(item => {
+                    tabela.row.add([
+                        item.descricao,
+                        new Date(item.data_hora).toLocaleDateString("pt-BR"),
+                        `R$ ${parseFloat(item.valor).toFixed(2).replace(".", ",")}`,
+                        item.classificacao
+                    ]);
+                });
+
+                tabela.draw(); // atualiza a tabela na tela
+            }
+
         });
+    });
 
     </script>
 </body>
