@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-	// Referência aos elementos DOM (HTML) da página
+	// ===== VARIÁVEIS DE CONTROLE DA GRAVAÇÃO DE ÁUDIO =====
+	let mediaRecorder;
+	let audioChunks = [];
+	let stream;
+
+	// ===== REFERÊNCIAS AOS ELEMENTOS DOM (HTML) =====
 	const cardResultado = document.getElementById("cardResultado");
 	const resultadoTexto = document.getElementById("resultado-texto");
 	const resultadoAudioImagem = document.getElementById(
@@ -9,18 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
 	const waveformContainer = document.getElementById("waveform-container");
 	const videoElement = document.getElementById("video");
 	const canvasElement = document.getElementById("canvas");
+
 	const gravarBtn = document.getElementById("gravar-btn");
 	const capturaFotoBtn = document.getElementById("captura-foto-btn");
 	const carregarBtn = document.getElementById("carregar-btn");
 	const arquivoInput = document.getElementById("arquivo-input");
 	const textoForm = document.getElementById("texto-form");
+
 	const btnEnviarGravacao = document.getElementById("btn-enviar-gravacao");
 	const btnCancelarGravacao = document.getElementById(
 		"btn-cancelar-gravacao"
 	);
 	const controlesGravacao = document.getElementById("controles-gravacao");
 
-	// Eventos de clique e envio associados aos botões e formulários
+	// ===== EVENTOS (LISTENERS) =====
 	gravarBtn.addEventListener("click", toggleGravacao);
 	btnEnviarGravacao.addEventListener("click", enviarGravacao);
 	btnCancelarGravacao.addEventListener("click", cancelarGravacao);
@@ -29,10 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 
-	// Variáveis de controle da gravação de áudio
-	let mediaRecorder;
-	let audioChunks = [];
-	let stream;
+	const toastData = sessionStorage.getItem("toastData");
+	if (toastData) {
+		// Garante que o toast será exibido com os dados corretos
+		const { type, title, message } = JSON.parse(toastData);
+		showToast({ type, title, message });
+
+		// Limpa o storage depois de exibir
+		sessionStorage.removeItem("toastData");
+	}
 
 	// Mostra o spinner de carregamento e exibe o card de resultado
 	function showLoading() {
@@ -101,8 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		btnEnviar.disabled = true; // 👈 Desativa o botão
 
 		const descricao = document.getElementById("descricao").value;
+		console.log(descricao)
+		
 		const formData = new FormData();
-		formData.append("descricao", descricao);
+		formData.append('descricao', descricao);
+
+		console.log("Enviando FormData:", Array.from(formData.entries()));
 
 		const { ok, data } = await enviarArquivoParaAPI(
 			"https://rtxapi.up.railway.app/registro/",
@@ -110,35 +126,41 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 
 		hideLoading();
-		cardResultado.classList.add("d-none");
-		document.getElementById("descricao").value = '';	
 
-		if (ok && data.Agente) {
-			showToast({
+		if (ok && data.response) {
+			const toastData = {
 				type: "success",
 				title: "Gasto Classificado com Sucesso",
 				message: `
-					<p><strong>Descrição:</strong> ${data.Agente.descricao}</p>
-					<p><strong>Classificação:</strong> ${data.Agente.classificacao}</p>
-					<p><strong>Valor:</strong> R$ ${parseFloat(data.Agente.valor).toFixed(2)}</p>
-				`,
-			});
+					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+				`
+			};
+			sessionStorage.setItem("toastData", JSON.stringify(toastData));
+			
+			location.reload();
 
-			btnEnviar.disabled = false; // ✅ Reativa o botão
 		} else {
+			const errorMsg = formatarErroApi(data);
 			showToast({
 				type: "error",
-				title: "Erro",
-				message: `
-					<p>${data.detail || "Erro inesperado. Tente novamente."}</p>
-				`,
+				title: "Erro ao classificar áudio",
+				message: `<p>${errorMsg}</p>`,
 			});
 			btnEnviar.disabled = false; // ✅ Reativa o botão
 		}
+
+		resetGravacao();
 	}
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
 	async function toggleGravacao() {
+		console.log("Iniciando gravação");
+
+		btnEnviar = document.getElementById("btnEnviaForm");
+		btnEnviar.disabled = true; // 👈 Desativa o botão
+
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
 			gravarBtn.textContent = "🎙 Gravar Áudio";
@@ -148,40 +170,79 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
+		if (typeof MediaRecorder === "undefined") {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"danger",
+				"<strong>Erro:</strong> Este navegador não suporta gravação de áudio."
+			);
+			return;
+		}
+
 		try {
-			// Solicita permissão para acessar o microfone
+			// Permissão do microfone ON
 			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			mediaRecorder = new MediaRecorder(stream);
+
+			const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+				? "audio/webm;codecs=opus"
+				: MediaRecorder.isTypeSupported("audio/mp4")
+				? "audio/mp4"
+				: "";
+
+			mediaRecorder = new MediaRecorder(stream, { mimeType });
+
 			audioChunks = [];
 
+			// UI ativada
 			resultadoAudioImagem.classList.add("d-none");
 			cardResultado.classList.add("show");
 			cardResultado.classList.remove("collapse");
 
-			// Inicializa visualização de áudio
 			waveformContainer.classList.remove("collapse");
 			waveformContainer.classList.add("show");
 
+			// Destrói waveSurfer antigo se existir (limpeza total)
 			if (window.waveSurfer) window.waveSurfer.destroy();
+
+			if (!WaveSurfer.microphone || !WaveSurfer.microphone.create) {
+				mostrarResultado(
+					resultadoAudioImagem,
+					"danger",
+					"<strong>Erro:</strong> Plugin  WaveSurfer não está carregado corretamente."
+				);
+				return;
+			}
+
+			// Cria nova instância com plugin Microfone devidamente carregado
 			window.waveSurfer = WaveSurfer.create({
 				container: "#waveform",
 				waveColor: "#4F46E5",
 				progressColor: "#6366F1",
 				height: 100,
+				plugins: [WaveSurfer.microphone.create()],
 			});
 
-			// Captura os dados de áudio em tempo real
+			// Start microfone (visualização do áudio rolando)
+			window.waveSurfer.microphone.start();
+
+			// Captura dados da gravação em tempo real
 			mediaRecorder.ondataavailable = (event) => {
 				audioChunks.push(event.data);
-				const blob = new Blob(audioChunks, { type: "audio/webm" });
-				const url = URL.createObjectURL(blob);
-				window.waveSurfer.load(url);
 			};
 
 			mediaRecorder.onstop = () => {
+				const blob = new Blob(audioChunks, { type: mimeType });
+				const url = URL.createObjectURL(blob);
+				window.waveSurfer.load(url);
+
+				console.log("Tamanho do blob:", blob.size);
+				console.log("Tipo do blob:", blob.type);
+
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
 				gravarBtn.disabled = false;
+
+				// Para todos os tracks de áudio
 				if (stream) stream.getTracks().forEach((track) => track.stop());
 			};
 
@@ -199,10 +260,18 @@ document.addEventListener("DOMContentLoaded", () => {
 				`<strong>Erro ao acessar microfone:</strong> ${err.message}`
 			);
 		}
+
+		// console.log({
+		// 	cardResultado: cardResultado.classList.toString(),
+		// 	waveformContainer: waveformContainer.classList.toString(),
+		// 	controlesGravacao: controlesGravacao.classList.toString(),
+		// });
 	}
 
 	// Envia o áudio gravado para transcrição via API
 	async function enviarGravacao() {
+		console.log("Eviando gravação para API")
+		waveformContainer.classList.add("collapse");
 		if (audioChunks.length === 0) {
 			mostrarResultado(
 				resultadoAudioImagem,
@@ -211,9 +280,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			);
 			return;
 		}
+
 		showLoading();
 
-		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+		const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
 		const formData = new FormData();
 		formData.append("file", audioBlob);
 
@@ -225,24 +295,54 @@ document.addEventListener("DOMContentLoaded", () => {
 		hideLoading();
 
 		if (ok) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"success",
-				`<strong>Transcrição:</strong> ${data.transcricao}`
-			);
+			const toastData = {
+				type: "success",
+				title: "Gasto Classificado com Sucesso",
+				message: `
+					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+				`
+			};
+			sessionStorage.setItem("toastData", JSON.stringify(toastData));
+
+			// resetGravacao();
+			location.reload();
 		} else {
 			const errorMsg = formatarErroApi(data);
-			mostrarResultado(
-				resultadoAudioImagem,
-				"danger",
-				`<strong>Erro:</strong> <pre style="white-space: pre-wrap;">${errorMsg}</pre>`
-			);
+			showToast({
+				type: "erro",
+				title: "Erro",
+				message: `
+					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+				`,
+			});
 		}
 
+		location.reload();
+		
+	}
+
+	// Reset estado da gravação após envio
+	function resetGravacao() { 
 		audioChunks = [];
+		cardResultado.classList.add("d-none");
 		controlesGravacao.classList.add("d-none");
-		waveformContainer.classList.add("collapse");
+		resultadoAudioImagem.classList.add("d-none");
 		gravarBtn.textContent = "🎙 Gravar Áudio";
+		gravarBtn.disabled = false;
+
+		// Reset wavesurfer (libera recursos e reinicia)
+		if (window.waveSurfer) {
+			window.waveSurfer.destroy();
+			window.waveSurfer = null;
+		}
+
+		// Permite uma nova gravação
+		mediaRecorder = null;
+		stream = null;
 	}
 
 	// Cancela a gravação atual e limpa a UI relacionada
@@ -250,15 +350,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
 		}
+
 		if (stream) {
 			stream.getTracks().forEach((track) => track.stop());
 		}
-		audioChunks = [];
-		controlesGravacao.classList.add("d-none");
-		waveformContainer.classList.add("collapse");
-		resultadoAudioImagem.classList.add("d-none");
-		gravarBtn.textContent = "🎙 Gravar Áudio";
-		gravarBtn.disabled = false;
+
+		resetGravacao();
 	}
 
 	// Captura imagem da webcam e envia para análise da API
@@ -364,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		hideLoading();
 	}
 
-	function showToast({ type = "success", title = "", message = "", delay = 5000 }) {
+	function showToast({type = "success", title = "", message = "", delay = 3000,}) {
 		const toastEl = document.getElementById("liveToast");
 		const toastCard = document.getElementById("toastCard");
 		const toastHeader = document.getElementById("toastHeader");
@@ -373,8 +470,22 @@ document.addEventListener("DOMContentLoaded", () => {
 		const toastBody = document.getElementById("toastBody");
 
 		// Limpa classes antigas
-		toastHeader.classList.remove("bg-success", "bg-danger", "bg-warning", "bg-info", "bg-primary");
-		toastIcon.classList.remove("bi-check-circle-fill", "bi-x-circle-fill", "bi-exclamation-triangle-fill", "bi-info-circle-fill", "bi-bell-fill");
+		toastHeader.classList.remove(
+			"bg-success",
+			"bg-danger",
+			"bg-warning",
+			"bg-info",
+			"bg-primary"
+		);
+
+		toastIcon.classList.remove(
+			"bi-check-circle-fill",
+			"bi-x-circle-fill",
+			"bi-exclamation-triangle-fill",
+			"bi-info-circle-fill",
+			"bi-bell-fill"
+		);
+
 		toastBody.className = "card-body bg-light text-dark";
 
 		// Define ícone, cor do header e título conforme o tipo
@@ -404,37 +515,64 @@ document.addEventListener("DOMContentLoaded", () => {
 		toastTitle.textContent = title;
 		toastBody.innerHTML = message;
 
-		// // Sons por tipo de toast
-		// const sounds = {
-		// 	success: 'success.mp3',
-		// 	error: 'error.mp3',
-		// 	warning: 'warning.mp3',
-		// 	info: 'info.mp3',
-		// 	default: 'notification.mp3',
-		// };
+		/* ========================================= */
 
-		// const soundFile = `./sounds/${sounds[type] || sounds.default}`;
-		// const audio = new Audio(soundFile);
+		// Sons por tipo de toast
+		const sounds = {
+			success: 'success.mp3',
+			error: 'error.mp3',
+			warning: 'warning.mp3',
+			info: 'info.mp3',
+			default: 'notification.mp3',
+		};
 
-		// // Garante que o navegador pode tocar o som
-		// audio.addEventListener('canplaythrough', () => {
-		// 	audio.play().catch((err) => {
-		// 		console.warn("Erro ao tocar som:", err.message);
-		// 	});
-		// });
+		const soundFile = `./sounds/${sounds[type] || sounds.default}`;
+		const audio = new Audio(soundFile);
 
-		// audio.addEventListener('error', (e) => {
-		// 	console.warn("Erro ao carregar o áudio:", soundFile, e);
-		// });
+		// Garante que o navegador pode tocar o som
+		audio.addEventListener('canplaythrough', () => {
+			audio.play().catch((err) => {
+				console.warn("Erro ao tocar som:", err.message);
+			});
+		});
+
+		audio.addEventListener('error', (e) => {
+			console.warn("Erro ao carregar o áudio:", soundFile, e);
+		});
+
+        /* ====================================================== */
 
 		// Mostrar toast (Bootstrap 5) com delay customizado
 		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
 		toastBootstrap.show();
 
 		// Evento ao fechar
-		toastEl.addEventListener('hidden.bs.toast', () => {
+		toastEl.addEventListener("hidden.bs.toast", () => {
 			console.log("Toast fechado.");
 		});
 	}
 
+	// forma de usar toast
+	// if (ok) {
+	// 		showToast({
+	// 			type: "success",
+	// 			title: "Gasto Classificado com Sucesso",
+	// 			message: `
+	// 				<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+	// 				<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+	// 				<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+	// 			`,
+	// 		});
+	// 	} else {
+	// 		const errorMsg = formatarErroApi(data);
+	// 		showToast({
+	// 			type: "success",
+	// 			title: "Gasto Classificado com Sucesso",
+	// 			message: `
+	// 				<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+	// 				<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+	// 				<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+	// 			`,
+	// 		});
+	// 	}
 });
