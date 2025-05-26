@@ -36,6 +36,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 
+	const toastData = sessionStorage.getItem("toastData");
+	if (toastData) {
+		// Garante que o toast será exibido com os dados corretos
+		const { type, title, message } = JSON.parse(toastData);
+		showToast({ type, title, message });
+
+		// Limpa o storage depois de exibir
+		sessionStorage.removeItem("toastData");
+	}
+
 	// Mostra o spinner de carregamento e exibe o card de resultado
 	function showLoading() {
 		loadingSpinner.classList.remove("d-none");
@@ -103,8 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		btnEnviar.disabled = true; // 👈 Desativa o botão
 
 		const descricao = document.getElementById("descricao").value;
+		console.log(descricao)
+		
 		const formData = new FormData();
-		formData.append("descricao", descricao);
+		formData.append('descricao', descricao);
+
+		console.log("Enviando FormData:", Array.from(formData.entries()));
 
 		const { ok, data } = await enviarArquivoParaAPI(
 			"https://rtxapi.up.railway.app/registro/",
@@ -112,37 +126,40 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 
 		hideLoading();
-		resetGravacao();
-		
-		document.getElementById("descricao").value = "";
 
 		if (ok && data.response) {
-			showToast({
+			const toastData = {
 				type: "success",
 				title: "Gasto Classificado com Sucesso",
 				message: `
 					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
 					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
-				`,
-			});
+				`
+			};
+			sessionStorage.setItem("toastData", JSON.stringify(toastData));
+			
+			location.reload();
 
-			btnEnviar.disabled = false; // ✅ Reativa o botão
 		} else {
+			const errorMsg = formatarErroApi(data);
 			showToast({
 				type: "error",
-				title: "Erro",
-				message: `
-					<p>${data.detail || "Erro inesperado. Tente novamente."}</p>
-				`,
+				title: "Erro ao classificar áudio",
+				message: `<p>${errorMsg}</p>`,
 			});
 			btnEnviar.disabled = false; // ✅ Reativa o botão
 		}
+
+		resetGravacao();
 	}
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
 	async function toggleGravacao() {
 		console.log("Iniciando gravação");
+
+		btnEnviar = document.getElementById("btnEnviaForm");
+		btnEnviar.disabled = true; // 👈 Desativa o botão
 
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
@@ -266,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		showLoading();
 
-		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+		const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
 		const formData = new FormData();
 		formData.append("file", audioBlob);
 
@@ -276,18 +293,20 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 
 		hideLoading();
-		resetGravacao();
 
 		if (ok) {
-			showToast({
+			const toastData = {
 				type: "success",
 				title: "Gasto Classificado com Sucesso",
 				message: `
 					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
 					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
-				`,
-			});
+				`
+			};
+			sessionStorage.setItem("toastData", JSON.stringify(toastData));
+
+			// resetGravacao();
 			location.reload();
 		} else {
 			const errorMsg = formatarErroApi(data);
@@ -300,9 +319,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
 				`,
 			});
-			location.reload();
 		}
 
+		location.reload();
 		
 	}
 
@@ -331,9 +350,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
 		}
+
 		if (stream) {
 			stream.getTracks().forEach((track) => track.stop());
 		}
+
 		resetGravacao();
 	}
 
@@ -440,12 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		hideLoading();
 	}
 
-	function showToast({
-		type = "success",
-		title = "",
-		message = "",
-		delay = 5000,
-	}) {
+	function showToast({type = "success", title = "", message = "", delay = 3000,}) {
 		const toastEl = document.getElementById("liveToast");
 		const toastCard = document.getElementById("toastCard");
 		const toastHeader = document.getElementById("toastHeader");
@@ -461,6 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			"bg-info",
 			"bg-primary"
 		);
+
 		toastIcon.classList.remove(
 			"bi-check-circle-fill",
 			"bi-x-circle-fill",
@@ -468,6 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			"bi-info-circle-fill",
 			"bi-bell-fill"
 		);
+
 		toastBody.className = "card-body bg-light text-dark";
 
 		// Define ícone, cor do header e título conforme o tipo
@@ -523,6 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
         /* ====================================================== */
+
 		// Mostrar toast (Bootstrap 5) com delay customizado
 		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
 		toastBootstrap.show();
@@ -532,4 +551,28 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.log("Toast fechado.");
 		});
 	}
+
+	// forma de usar toast
+	// if (ok) {
+	// 		showToast({
+	// 			type: "success",
+	// 			title: "Gasto Classificado com Sucesso",
+	// 			message: `
+	// 				<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+	// 				<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+	// 				<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+	// 			`,
+	// 		});
+	// 	} else {
+	// 		const errorMsg = formatarErroApi(data);
+	// 		showToast({
+	// 			type: "success",
+	// 			title: "Gasto Classificado com Sucesso",
+	// 			message: `
+	// 				<p><strong>Descrição:</strong> ${data.response.descricao}</p>
+	// 				<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
+	// 				<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
+	// 			`,
+	// 		});
+	// 	}
 });
