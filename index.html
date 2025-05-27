@@ -164,8 +164,11 @@
             document.getElementById("data-inicio").value = dataInicio;
             document.getElementById("data-fim").value = dataFim;
 
-            dataInicioInput = document.getElementById("data_inicio");
-            dataFimInput = document.getElementById("data_fim");
+            const dataInicioInput = document.getElementById("data-inicio").value;
+            const dataFimInput = document.getElementById("data-fim").value;
+
+            console.log("📤 Enviando para API:", dataInicioInput, dataFimInput);
+
 
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
