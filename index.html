@@ -151,29 +151,18 @@
     <script src="./script.js"></script>
     <script>
         $(document).ready(function() {
-             const hoje = new Date();
-
-            // Primeiro dia do mês
+            const hoje = new Date();
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-            // Formato yyyy-mm-dd
-            const formatarData = (data) => data.toISOString().split("T")[0];
+            // Função pra formatar como yyyy-mm-dd
+            const formatarData = (data) => data.toISOString().split('T')[0];
 
-            // Preenche os inputs
-            const dataInicio = document.getElementById("data-inicio");
-            const dataFim = document.getElementById("data-fim");
+            // Resultado
+            const dataInicio = formatarData(primeiroDia);
+            const dataFim = formatarData(hoje);
 
-            if (dataInicio && dataFim) {
-            dataInicio.value = formatarData(primeiroDia);
-            dataFim.value = formatarData(hoje);
-            }
-
-            // Pegar os campos de data
-            const dataInicioInput = $('#data-inicio');
-            const dataFimInput = $('#data-fim');
-
-            console.log(dataInicioInput);
-            console.log(dataFimInput);
+            console.log("Data Início:", dataInicio); // ex: 2025-05-01
+            console.log("Data Fim:", dataFim);       // ex: 2025-05-27
 
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
