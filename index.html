@@ -170,8 +170,6 @@
             const dataInicioInput = $('#data-inicio');
             const dataFimInput = $('#data-fim');
 
-            console.log(dataInicioInput);
-            console.log(dataFimInput);
 
             $.ajax({
                 type: "GET",
@@ -182,6 +180,8 @@
                 },
                 dataType: "json",
                 success: function(response) {
+                    console.log(dataInicioInput);
+                    console.log(dataFimInput);
                     console.log("✅ Resposta recebida:", response);
 
                     tabela.clear();
