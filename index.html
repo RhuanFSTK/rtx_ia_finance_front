@@ -167,7 +167,6 @@
             dataInicioInput = document.getElementById("data_inicio");
             dataFimInput = document.getElementById("data_fim");
 
-
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
 
@@ -180,9 +179,6 @@
                 },
                 dataType: "json",
                 success: function(response) {
-                    console.log(dataInicioInput);
-                    console.log(dataFimInput);
-
                     console.log("✅ Resposta recebida:", response);
 
                     tabela.clear();
