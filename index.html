@@ -151,17 +151,22 @@
     <script src="./script.js"></script>
     <script>
         $(document).ready(function() {
-            const hoje = new Date();
-    
+             const hoje = new Date();
+
             // Primeiro dia do mês
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
             // Formato yyyy-mm-dd
-            const formatarData = (data) => data.toISOString().split('T')[0];
+            const formatarData = (data) => data.toISOString().split("T")[0];
 
-            // Preenche os inputs com as datas
-            document.getElementById("data-inicio").value = formatarData(primeiroDia);
-            document.getElementById("data-fim").value = formatarData(hoje);
+            // Preenche os inputs
+            const dataInicio = document.getElementById("data-inicio");
+            const dataFim = document.getElementById("data-fim");
+
+            if (dataInicio && dataFim) {
+            dataInicio.value = formatarData(primeiroDia);
+            dataFim.value = formatarData(hoje);
+            }
 
             // Pegar os campos de data
             const dataInicioInput = $('#data-inicio');
