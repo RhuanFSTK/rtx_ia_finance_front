@@ -167,52 +167,55 @@
             document.getElementById("data-inicio").value = dataInicio;
             document.getElementById("data-fim").value = dataFim;
 
+            dataInicioInput = document.getElementById("data_inicio");
+            dataFimInput = document.getElementById("data_fim");
+
 
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
 
-            // $.ajax({
-            //     type: "GET",
-            //     url: "https://rtxapi.up.railway.app/consulta/",
-            //     data: {
-            //         data_inicio: dataInicioInput,
-            //         data_fim: dataFimInput
-            //     },
-            //     dataType: "json",
-            //     success: function(response) {
-            //         console.log(dataInicioInput);
-            //         console.log(dataFimInput);
+            $.ajax({
+                type: "GET",
+                url: "https://rtxapi.up.railway.app/consulta/",
+                data: {
+                    data_inicio: dataInicioInput,
+                    data_fim: dataFimInput
+                },
+                dataType: "json",
+                success: function(response) {
+                    console.log(dataInicioInput);
+                    console.log(dataFimInput);
 
-            //         console.log("✅ Resposta recebida:", response);
+                    console.log("✅ Resposta recebida:", response);
 
-            //         tabela.clear();
+                    tabela.clear();
 
-            //         let total = 0;
+                    let total = 0;
 
-            //         response.gastos.forEach(item => {
-            //             const valor = parseFloat(item.valor);
-            //             total += valor;
+                    response.gastos.forEach(item => {
+                        const valor = parseFloat(item.valor);
+                        total += valor;
 
-            //             tabela.row.add([
-            //                 item.descricao,
-            //                 new Date(item.data_hora).toLocaleDateString("pt-BR"),
-            //                 `R$ ${valor.toFixed(2).replace(".", ",")}`,
-            //                 item.classificacao
-            //             ]);
-            //         });
+                        tabela.row.add([
+                            item.descricao,
+                            new Date(item.data_hora).toLocaleDateString("pt-BR"),
+                            `R$ ${valor.toFixed(2).replace(".", ",")}`,
+                            item.classificacao
+                        ]);
+                    });
 
-            //         // Adiciona a linha de total
-            //         tabela.row.add([
-            //             "<strong>Total</strong>",
-            //             "",
-            //             `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
-            //             ""
-            //         ]).node().style.fontWeight = 'bold'; // estiliza a linha total
+                    // Adiciona a linha de total
+                    tabela.row.add([
+                        "<strong>Total</strong>",
+                        "",
+                        `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
+                        ""
+                    ]).node().style.fontWeight = 'bold'; // estiliza a linha total
 
-            //         tabela.draw();
-            //     }
+                    tabela.draw();
+                }
 
-            // });
+            });
         });
     </script>
 </body>
