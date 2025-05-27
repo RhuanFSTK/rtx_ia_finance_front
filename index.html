@@ -151,7 +151,7 @@
     <script src="./script.js"></script>
     <script>
         $(document).ready(function() {
-             const hoje = new Date();
+            const hoje = new Date();
     
             // Primeiro dia do mês
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
@@ -159,15 +159,19 @@
             // Formato yyyy-mm-dd
             const formatarData = (data) => data.toISOString().split('T')[0];
 
-            // Preenche os inputs
+            // Preenche os inputs com as datas
             document.getElementById("data-inicio").value = formatarData(primeiroDia);
             document.getElementById("data-fim").value = formatarData(hoje);
-            
+
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
+
             // Pegar os campos de data
             const dataInicioInput = $('#data-inicio');
             const dataFimInput = $('#data-fim');
+
+            console.log(dataInicioInput);
+            console.log(dataFimInput);
 
             $.ajax({
                 type: "GET",
