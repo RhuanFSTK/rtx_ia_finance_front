@@ -36,48 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	// arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 
-	const tabela = $('#tabela-gastos').DataTable();
-
-	$.ajax({
-		type: "GET",
-		url: "https://rtxapi.up.railway.app/consulta/",
-		data: {
-			data_inicio: "2025-05-25T00:00:00",
-			data_fim: "2025-05-25T23:59:59"
-		},
-		dataType: "json",
-		success: function(response) {
-			console.log("✅ Resposta recebida:", response);
-
-			tabela.clear();
-
-			let total = 0;
-
-			response.gastos.forEach(item => {
-				const valor = parseFloat(item.valor);
-				total += valor;
-
-				tabela.row.add([
-					item.descricao,
-					new Date(item.data_hora).toLocaleDateString("pt-BR"),
-					`R$ ${valor.toFixed(2).replace(".", ",")}`,
-					item.classificacao
-				]);
-			});
-
-			// Adiciona a linha de total
-			tabela.row.add([
-				"<strong>Total</strong>",
-				"",
-				`<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
-				""
-			]).node().style.fontWeight = 'bold'; // estiliza a linha total
-
-			tabela.draw();
-		}
-
-	});
-
 	const toastData = sessionStorage.getItem("toastData");
 	if (toastData) {
 		// Garante que o toast será exibido com os dados corretos
