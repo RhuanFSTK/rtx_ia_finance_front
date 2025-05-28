@@ -240,7 +240,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
-				gravarBtn.disabled = true; // bloqueia até enviar/cancelar
+				gravarBtn.disabled = true;
+
+				// 👇 Aqui mostramos os controles depois do STOP
+				controlesGravacao.classList.remove("d-none");
 
 				if (stream) stream.getTracks().forEach((track) => track.stop());
 			};
@@ -248,7 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			mediaRecorder.start();
 			gravarBtn.textContent = "⏹ Parar Gravação";
 			gravarBtn.disabled = false;
-			controlesGravacao.classList.remove("d-none");
 			btnEnviarGravacao.disabled = true;
 			btnCancelarGravacao.disabled = true;
 			btnEnviar.disabled = true;
