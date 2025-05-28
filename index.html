@@ -156,10 +156,11 @@
             periodo(event)
         });
 
-        function periodo(event) {
+        function periodo(event) { 
             event.preventDefault();
-            const dataInicioInput = $('#data-inicio').val();
-            const dataFimInput = $('#data-fim').val();
+
+            dataInicioInput = document.getElementById("data-inicio").value;
+	        dataFimInput = document.getElementById("data-fim").value;
 
             console.log("📅 Consultando período:", dataInicioInput, "até", dataFimInput);
 
@@ -209,7 +210,7 @@
         }
 
     </script>
-    
+
 </body>
 
 </html>
