@@ -154,48 +154,62 @@
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
 
-            // Periodo
+            // Define o primeiro dia do mês atual
             const hoje = new Date();
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-            // Função pra formatar como yyyy-mm-dd
+            // Formata as datas para yyyy-mm-dd
             const formatarData = (data) => data.toISOString().split('T')[0];
-
-            // Resultado
             const dataInicio = formatarData(primeiroDia);
             const dataFim = formatarData(hoje);
 
-            document.getElementById("data-inicio").value = dataInicio;
-            document.getElementById("data-fim").value = dataFim;
+            // Preenche os inputs
+            $("#data-inicio").val(dataInicio);
+            $("#data-fim").val(dataFim);
 
-            const dataInicioInput = document.getElementById("data-inicio").value;
-            const dataFimInput = document.getElementById("data-fim").value;
+            // Chama a função passando as datas já preenchidas
+            consultarPeriodo(dataInicio, dataFim, tabela);
 
-            periodo(event);
+            // Ativa o botão de filtro
+            $("#btn-filtrar").on("click", function(event) {
+                event.preventDefault();
+
+                const dataInicioInput = $("#data-inicio").val();
+                const dataFimInput = $("#data-fim").val();
+
+                // Validação de campos vazios
+                let valid = true;
+                if (!dataInicioInput) {
+                    $("#data-inicio").addClass("is-invalid");
+                    valid = false;
+                } else {
+                    $("#data-inicio").removeClass("is-invalid");
+                }
+
+                if (!dataFimInput) {
+                    $("#data-fim").addClass("is-invalid");
+                    valid = false;
+                } else {
+                    $("#data-fim").removeClass("is-invalid");
+                }
+
+                if (!valid) return;
+
+                consultarPeriodo(dataInicioInput, dataFimInput, tabela);
+            });
         });
 
-        function periodo(event) {
-            event.preventDefault();
-
-            if (!dataInicioInput || !dataFimInput) {
-                if (!dataInicioInput) $("#data-inicio").addClass("is-invalid");
-                if (!dataFimInput) $("#data-fim").addClass("is-invalid");
-                return;
-            }
-
+        function consultarPeriodo(dataInicio, dataFim, tabela) {
             $.ajax({
                 type: "GET",
                 url: "https://rtxapi.up.railway.app/consulta/",
                 data: {
-                    data_inicio: dataInicioInput,
-                    data_fim: dataFimInput
+                    data_inicio: dataInicio,
+                    data_fim: dataFim
                 },
                 dataType: "json",
                 success: function(response) {
-
-                    const tabela = $('#tabela-gastos').DataTable();
                     tabela.clear();
-
                     let total = 0;
 
                     response.gastos.forEach(item => {
@@ -210,6 +224,7 @@
                         ]);
                     });
 
+                    // Adiciona o total no final
                     tabela.row.add([
                         "<strong>Total</strong>",
                         "",
