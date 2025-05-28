@@ -164,13 +164,16 @@
 
             // 🗓 Define a data padrão: do primeiro dia do mês até hoje
             const hoje = new Date();
+            const ontem = new Date(hoje);
+            data_fim_new = ontem.setDate(hoje.getDate() - 1);
+
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
             // 🔧 Função utilitária para formatar data como yyyy-mm-dd
             const formatarData = (data) => data.toISOString().split('T')[0];
 
             const dataInicioPadrao = formatarData(primeiroDia);
-            const dataFimPadrao = formatarData(hoje);
+            const dataFimPadrao = formatarData(data_fim_new);
 
             // 🖋 Preenche os inputs de data automaticamente
             $("#data-inicio").val(dataInicioPadrao);

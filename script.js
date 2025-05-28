@@ -229,6 +229,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				audioChunks.push(event.data);
 			};
 
+			/* DESABILITAR BOTAO DURANTE A GRAVAÇÃO E QUALQUER PROCESSO (CRIAR UMA FUNÇÃO COM TODOS OS BOTOES) */
+			/* AJUSTA SEQUENCIA DE BOTAO DE ENVIAR AUDIO (APARECER SOMENTE APÓS O TERMINO DA GRAVAÇÃO) */
+			
 			mediaRecorder.onstop = () => {
 				const blob = new Blob(audioChunks, { type: mimeType });
 				const url = URL.createObjectURL(blob);
