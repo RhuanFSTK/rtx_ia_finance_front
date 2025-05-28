@@ -164,6 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			mediaRecorder.stop();
 			gravarBtn.textContent = "🎙 Gravar Áudio";
 			gravarBtn.disabled = false;
+			btnEnviarGravacao.disabled = false;
+			btnCancelarGravacao.disabled = false;
 			return;
 		}
 
@@ -227,16 +229,16 @@ document.addEventListener("DOMContentLoaded", () => {
 				audioChunks.push(event.data);
 			};
 
+			/* DESABILITAR BOTAO DURANTE A GRAVAÇÃO E QUALQUER PROCESSO (CRIAR UMA FUNÇÃO COM TODOS OS BOTOES) */
+			/* AJUSTA SEQUENCIA DE BOTAO DE ENVIAR AUDIO (APARECER SOMENTE APÓS O TERMINO DA GRAVAÇÃO) */
+			
 			mediaRecorder.onstop = () => {
-				btnEnviarGravacao.disabled = false;
-				btnCancelarGravacao.disabled = false;
-				
 				const blob = new Blob(audioChunks, { type: mimeType });
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
 
-				// console.log("Tamanho do blob:", blob.size);
-				// console.log("Tipo do blob:", blob.type);
+				console.log("Tamanho do blob:", blob.size);
+				console.log("Tipo do blob:", blob.type);
 
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;

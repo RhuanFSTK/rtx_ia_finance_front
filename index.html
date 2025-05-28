@@ -43,8 +43,8 @@
 
                 <!-- Botões de controle de gravação -->
                 <div id="controles-gravacao" class="d-none mt-3 text-center">
-                    <button id="btn-enviar-gravacao" class="btn btn-success me-2">✅ Enviar</button>
-                    <button id="btn-cancelar-gravacao" class="btn btn-danger">❌ Cancelar</button>
+                    <button id="btn-enviar-gravacao" class="btn btn-success me-2">Enviar</button>
+                    <button id="btn-cancelar-gravacao" class="btn btn-danger">Cancelar</button>
                 </div>
 
                 <input type="file" id="arquivo-input" accept="image/*,audio/*" class="d-none">
@@ -69,7 +69,7 @@
             <div class="card-body">
                 <div class="row justify-content-between col-12 mx-auto">
                     <div class="col-md-4">
-                        <button id="gravar-btn" class="btn btn-outline-primary w-100">🎙 Gravar Áudio</button>
+                        <button id="gravar-btn" class="btn btn-dark-blue">🎙 Gravar Áudio</button>
                     </div>
                     <!-- <div class="col-md-4">
                         <button id="captura-foto-btn" class="btn btn-outline-success w-100">📸 Capturar Foto</button>
@@ -157,20 +157,22 @@
     <script src="./script.js"></script>
 
     <script>
-
         $(document).ready(function() {
             // Instância da tabela DataTable
             const tabela = $('#tabela-gastos').DataTable();
 
             // 🗓 Define a data padrão: do primeiro dia do mês até hoje
             const hoje = new Date();
+            const ontem = new Date(hoje);
+            ontem.setDate(hoje.getDate() + 1);
+
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
             // 🔧 Função utilitária para formatar data como yyyy-mm-dd
             const formatarData = (data) => data.toISOString().split('T')[0];
 
             const dataInicioPadrao = formatarData(primeiroDia);
-            const dataFimPadrao = formatarData(hoje);
+            const dataFimPadrao = formatarData(ontem);
 
             // 🖋 Preenche os inputs de data automaticamente
             $("#data-inicio").val(dataInicioPadrao);
@@ -207,10 +209,14 @@
                 // Se estiver inválido, cancela
                 if (!valid) return;
 
+                console.log(dataInicioInput);
+                console.log(dataFimInput);
+
                 // 🔁 Consulta com os dados filtrados
                 consultarPeriodo(dataInicioInput, dataFimInput, tabela);
             });
         });
+
 
         /**
          * 🔄 Função principal para consultar e preencher a tabela
@@ -235,8 +241,7 @@
                             </div>
                         </div>
                     </td>
-                </tr>`
-            );
+                </tr>`);
 
             $.ajax({
                 type: "GET",
@@ -247,6 +252,7 @@
                 },
                 dataType: "json",
                 success: function(response) {
+                    console.log("Dados recebidos:", response);
                     tabela.clear();
 
                     const gastos = response.gastos || [];
@@ -287,8 +293,7 @@
                             <td colspan="4" class="text-center text-danger py-4">
                                 Erro ao carregar os dados. Tente novamente.
                             </td>
-                        </tr>`
-                    );
+                        </tr>`);
                 }
             });
         }
