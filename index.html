@@ -92,7 +92,7 @@
                             <input type="date" id="data-fim" class="form-control" required min="2020-01-01" max="2030-12-31">
                         </div>
                         <div class="col-md-2">
-                            <button class="btn btn-filtrar btn-dark-blue w-100" id="btn-filtrar" >Consultar</button>
+                            <button class="btn btn-filtrar btn-dark-blue w-100" id="btn-filtrar">Consultar</button>
                         </div>
                     </div>
                 </form>
@@ -136,6 +136,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Spinner de carregamento -->
+    <div id="loading-spinner" class="text-center my-3" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p>Carregando dados...</p>
+    </div>
+
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -200,6 +209,9 @@
         });
 
         function consultarPeriodo(dataInicio, dataFim, tabela) {
+            // Mostrar o spinner
+            $("#loading-spinner").show();
+
             $.ajax({
                 type: "GET",
                 url: "https://rtxapi.up.railway.app/consulta/",
@@ -224,7 +236,6 @@
                         ]);
                     });
 
-                    // Adiciona o total no final
                     tabela.row.add([
                         "<strong>Total</strong>",
                         "",
@@ -233,6 +244,13 @@
                     ]).node().style.fontWeight = 'bold';
 
                     tabela.draw();
+                },
+                error: function() {
+                    alert("Erro ao carregar os dados.");
+                },
+                complete: function() {
+                    // Esconde o spinner quando tudo terminar (com ou sem erro)
+                    $("#loading-spinner").hide();
                 }
             });
         }
