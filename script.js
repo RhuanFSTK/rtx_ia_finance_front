@@ -232,10 +232,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
 
+				// console.log("Tamanho do blob:", blob.size);
+				// console.log("Tipo do blob:", blob.type);
+				
 				// Para todos os tracks de áudio
-				if (stream) {
-					stream.getTracks().forEach((track) => track.stop());
-				}
+				if (stream) stream.getTracks().forEach((track) => track.stop());
+
 
 				// Mostra os controles de gravação (Enviar / Cancelar)
 				controlesGravacao.classList.remove("d-none");
@@ -253,10 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				stream = null;
 			};
 
-			mediaRecorder.start();
-			gravarBtn.textContent = "⏹ Parar Gravação";
-			gravarBtn.disabled = false;
-
+			
 		} catch (err) {
 			mostrarResultado(
 				resultadoAudioImagem,
