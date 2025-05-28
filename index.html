@@ -166,16 +166,9 @@
                 if (!dataFimInput) $("#data-fim").addClass("is-invalid");
                 return;
             }
-            
+
             const dataInicioInput = document.getElementById("data-inicio").value;
             const dataFimInput = document.getElementById("data-fim").value;
-
-            console.log("📅 Consultando período:", dataInicioInput, "até", dataFimInput);
-
-            if (!dataInicioInput || !dataFimInput) {
-                console.error("❌ Data de início ou fim não informada.");
-                return;
-            }
 
             $.ajax({
                 type: "GET",
@@ -186,7 +179,6 @@
                 },
                 dataType: "json",
                 success: function(response) {
-                    console.log("✅ Resposta recebida:", response);
 
                     const tabela = $('#tabela-gastos').DataTable();
                     tabela.clear();
