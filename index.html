@@ -200,8 +200,6 @@
         });
 
         function consultarPeriodo(dataInicio, dataFim, tabela) {
-            event.preventDefault();
-
             if (!dataInicioInput || !dataFimInput) {
                 if (!dataInicioInput) $("#data-inicio").addClass("is-invalid");
                 if (!dataFimInput) $("#data-fim").addClass("is-invalid");
@@ -212,15 +210,15 @@
 
             // Coloca loading no tbody
             tbody.html(`
-      <tr>
-        <td colspan="4" class="text-center py-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Carregando...</span>
-          </div>
-          <div class="mt-2 fw-bold text-primary">Carregando dados...</div>
-        </td>
-      </tr>
-    `);
+                <tr>
+                    <td colspan="4" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <div class="mt-2 fw-bold text-primary">Carregando dados...</div>
+                    </td>
+                </tr>`
+            );
 
             $.ajax({
                 type: "GET",
