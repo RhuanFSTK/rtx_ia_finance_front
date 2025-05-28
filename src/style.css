@@ -87,6 +87,12 @@ Tabela de consulta
   border-color: red;
 }
 
+.loading-spinner {
+    color: #2e3b4e;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
 
 /* Estilo responsivo para dispositivos menores */
 @media (max-width: 768px) {
