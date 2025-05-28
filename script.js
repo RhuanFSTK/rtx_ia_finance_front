@@ -208,7 +208,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			waveformContainer.classList.remove("collapse");
 			waveformContainer.classList.add("show");
 
-			if (window.waveSurfer) window.waveSurfer.destroy();
+			if (window.waveSurfer) {
+				window.waveSurfer.destroy();
+				delete window.waveSurfer;
+			}
 
 			if (!WaveSurfer.microphone || !WaveSurfer.microphone.create) {
 				mostrarResultado(
