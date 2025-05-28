@@ -107,6 +107,15 @@
                                     <th>Classificação</th>
                                 </tr>
                             </thead>
+                            <tbody id="tabela-body">
+                                <!-- Spinner de carregamento -->
+                                <div id="loading-spinner" class="text-center my-3" style="display: none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Carregando...</span>
+                                    </div>
+                                    <p>Carregando dados...</p>
+                                </div>
+                            </tbody>
                             <tfoot>
                                 <tr>
                                     <th colspan="2" style="text-align:right"></th>
@@ -136,15 +145,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Spinner de carregamento -->
-    <div id="loading-spinner" class="text-center my-3" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Carregando...</span>
-        </div>
-        <p>Carregando dados...</p>
-    </div>
-
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
