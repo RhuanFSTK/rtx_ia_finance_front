@@ -238,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				// Para todos os tracks de áudio
 				if (stream) {
 					stream.getTracks().forEach((track) => track.stop());
-					controlesGravacao.classList.add("d-none");
+					controlesGravacao.classList.remove("d-none");
 					gravarBtn.disabled = true;
 					btnEnviarGravacao.disabled = false;
 					btnCancelarGravacao.disabled = false;
