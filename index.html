@@ -90,7 +90,6 @@
                         <div class="col-md-5">
                             <label for="data-fim" class="form-label">Data Fim</label>
                             <input type="date" id="data-fim" class="form-control" required min="2020-01-01" max="2030-12-31">
-
                         </div>
                         <div class="col-md-2">
                             <button class="btn btn-dark-blue w-100" onclick="periodo(event)">Consultar</button>
@@ -157,9 +156,17 @@
             periodo();
         });
 
+        
+
         function periodo(event) {
             if (event) event.preventDefault();
 
+            if (!dataInicioInput || !dataFimInput) {
+                if (!dataInicioInput) $("#data-inicio").addClass("is-invalid");
+                if (!dataFimInput) $("#data-fim").addClass("is-invalid");
+                return;
+            }
+            
             const dataInicioInput = document.getElementById("data-inicio").value;
             const dataFimInput = document.getElementById("data-fim").value;
 

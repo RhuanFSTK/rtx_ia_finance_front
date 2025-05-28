@@ -83,6 +83,11 @@ Tabela de consulta
   background-color: transparent !important;
 }
 
+.is-invalid {
+  border-color: red;
+}
+
+
 /* Estilo responsivo para dispositivos menores */
 @media (max-width: 768px) {
     body {
