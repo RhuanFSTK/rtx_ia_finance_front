@@ -164,6 +164,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			mediaRecorder.stop();
 			gravarBtn.textContent = "🎙 Gravar Áudio";
 			gravarBtn.disabled = false;
+			btnEnviarGravacao.disabled = false;
+			btnCancelarGravacao.disabled = false;
 			return;
 		}
 
@@ -235,21 +237,21 @@ document.addEventListener("DOMContentLoaded", () => {
 				// console.log("Tamanho do blob:", blob.size);
 				// console.log("Tipo do blob:", blob.type);
 
-				// Agora sim: mostra os botões de Enviar e Cancelar!
-				controlesGravacao.classList.remove("d-none");
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
-
 				gravarBtn.disabled = false;
-				gravarBtn.textContent = "🎙 Gravar Áudio";
 
-				mediaRecorder = null;
-				stream = null;
+				// Para todos os tracks de áudio
+				if (stream) stream.getTracks().forEach((track) => track.stop());
 			};
 
 			mediaRecorder.start();
 			gravarBtn.textContent = "⏹ Parar Gravação";
 			gravarBtn.disabled = false;
+
+			controlesGravacao.classList.remove("d-none");
+			btnEnviarGravacao.disabled = true;
+			btnCancelarGravacao.disabled = true;
 		} catch (err) {
 			mostrarResultado(
 				resultadoAudioImagem,
