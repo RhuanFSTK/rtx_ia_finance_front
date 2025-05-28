@@ -113,9 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		btnEnviar.disabled = true; // 👈 Desativa o botão
 
 		const descricao = document.getElementById("descricao").value;
-		
+
 		const formData = new FormData();
-		formData.append('descricao', descricao);
+		formData.append("descricao", descricao);
 
 		// console.log("Enviando FormData:", Array.from(formData.entries()));
 
@@ -134,12 +134,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
 					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
-				`
+				`,
 			};
 			sessionStorage.setItem("toastData", JSON.stringify(toastData));
-			
-			location.reload();
 
+			location.reload();
 		} else {
 			const errorMsg = formatarErroApi(data);
 			showToast({
@@ -155,17 +154,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
 	async function toggleGravacao() {
-		// console.log("Iniciando gravação");
-
 		btnEnviar = document.getElementById("btnEnviaForm");
-		btnEnviar.disabled = true; // 👈 Desativa o botão
 
+		// Impede nova gravação se a anterior não foi enviada/cancelada
+		if (
+			mediaRecorder &&
+			mediaRecorder.state === "inactive" &&
+			audioChunks.length > 0
+		) {
+			mostrarResultado(
+				resultadoAudioImagem,
+				"warning",
+				"Finalize ou cancele a gravação atual antes de iniciar uma nova."
+			);
+			return;
+		}
+
+		// Se estiver gravando → Para
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
 			gravarBtn.textContent = "🎙 Gravar Áudio";
-			gravarBtn.disabled = false;
-			btnEnviarGravacao.disabled = false;
-			btnCancelarGravacao.disabled = false;
+			gravarBtn.disabled = true; // Desativa até carregar o player
 			return;
 		}
 
@@ -179,40 +188,37 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		try {
-			// Permissão do microfone ON
 			stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-			const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+			const mimeType = MediaRecorder.isTypeSupported(
+				"audio/webm;codecs=opus"
+			)
 				? "audio/webm;codecs=opus"
 				: MediaRecorder.isTypeSupported("audio/mp4")
 				? "audio/mp4"
 				: "";
 
 			mediaRecorder = new MediaRecorder(stream, { mimeType });
-
 			audioChunks = [];
 
-			// UI ativada
+			// UI
 			resultadoAudioImagem.classList.add("d-none");
 			cardResultado.classList.add("show");
 			cardResultado.classList.remove("collapse");
-
 			waveformContainer.classList.remove("collapse");
 			waveformContainer.classList.add("show");
 
-			// Destrói waveSurfer antigo se existir (limpeza total)
 			if (window.waveSurfer) window.waveSurfer.destroy();
 
 			if (!WaveSurfer.microphone || !WaveSurfer.microphone.create) {
 				mostrarResultado(
 					resultadoAudioImagem,
 					"danger",
-					"<strong>Erro:</strong> Plugin  WaveSurfer não está carregado corretamente."
+					"<strong>Erro:</strong> WaveSurfer não carregado corretamente."
 				);
 				return;
 			}
 
-			// Cria nova instância com plugin Microfone devidamente carregado
 			window.waveSurfer = WaveSurfer.create({
 				container: "#waveform",
 				waveColor: "#4F46E5",
@@ -221,40 +227,31 @@ document.addEventListener("DOMContentLoaded", () => {
 				plugins: [WaveSurfer.microphone.create()],
 			});
 
-			// Start microfone (visualização do áudio rolando)
 			window.waveSurfer.microphone.start();
 
-			// Captura dados da gravação em tempo real
 			mediaRecorder.ondataavailable = (event) => {
 				audioChunks.push(event.data);
 			};
 
-			/* DESABILITAR BOTAO DURANTE A GRAVAÇÃO E QUALQUER PROCESSO (CRIAR UMA FUNÇÃO COM TODOS OS BOTOES) */
-			/* AJUSTA SEQUENCIA DE BOTAO DE ENVIAR AUDIO (APARECER SOMENTE APÓS O TERMINO DA GRAVAÇÃO) */
-			
 			mediaRecorder.onstop = () => {
 				const blob = new Blob(audioChunks, { type: mimeType });
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
 
-				console.log("Tamanho do blob:", blob.size);
-				console.log("Tipo do blob:", blob.type);
-
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
-				gravarBtn.disabled = false;
+				gravarBtn.disabled = true; // bloqueia até enviar/cancelar
 
-				// Para todos os tracks de áudio
 				if (stream) stream.getTracks().forEach((track) => track.stop());
 			};
 
 			mediaRecorder.start();
 			gravarBtn.textContent = "⏹ Parar Gravação";
 			gravarBtn.disabled = false;
-
 			controlesGravacao.classList.remove("d-none");
 			btnEnviarGravacao.disabled = true;
 			btnCancelarGravacao.disabled = true;
+			btnEnviar.disabled = true;
 		} catch (err) {
 			mostrarResultado(
 				resultadoAudioImagem,
@@ -262,24 +259,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				`<strong>Erro ao acessar microfone:</strong> ${err.message}`
 			);
 		}
-
-		// console.log({
-		// 	cardResultado: cardResultado.classList.toString(),
-		// 	waveformContainer: waveformContainer.classList.toString(),
-		// 	controlesGravacao: controlesGravacao.classList.toString(),
-		// });
 	}
 
 	// Envia o áudio gravado para transcrição via API
 	async function enviarGravacao() {
-		// console.log("Eviando gravação para API")
-		waveformContainer.classList.add("collapse");
 		if (audioChunks.length === 0) {
-			mostrarResultado(
-				resultadoAudioImagem,
-				"warning",
-				"Nenhuma gravação para enviar."
-			);
+			mostrarResultado(resultadoAudioImagem, "warning", "Nenhuma gravação para enviar.");
 			return;
 		}
 
@@ -304,61 +289,55 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
 					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
 					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
-				`
+				`,
 			};
 			sessionStorage.setItem("toastData", JSON.stringify(toastData));
-
-			// resetGravacao();
-			location.reload();
+			resetGravacao();
 		} else {
 			const errorMsg = formatarErroApi(data);
 			showToast({
 				type: "erro",
 				title: "Erro",
-				message: `
-					<p><strong>Descrição:</strong> ${data.response.descricao}</p>
-					<p><strong>Classificação:</strong> ${data.response.classificacao}</p>
-					<p><strong>Valor:</strong> R$ ${parseFloat(data.response.valor).toFixed(2)}</p>
-				`,
+				message: errorMsg,
 			});
 		}
-
-		location.reload();
-		
 	}
 
+
 	// Reset estado da gravação após envio
-	function resetGravacao() { 
+	function resetGravacao() {
 		audioChunks = [];
 		cardResultado.classList.add("d-none");
 		controlesGravacao.classList.add("d-none");
 		resultadoAudioImagem.classList.add("d-none");
+
 		gravarBtn.textContent = "🎙 Gravar Áudio";
 		gravarBtn.disabled = false;
+		btnEnviarGravacao.disabled = true;
+		btnCancelarGravacao.disabled = true;
+		btnEnviar.disabled = false;
 
-		// Reset wavesurfer (libera recursos e reinicia)
 		if (window.waveSurfer) {
 			window.waveSurfer.destroy();
 			window.waveSurfer = null;
 		}
 
-		// Permite uma nova gravação
 		mediaRecorder = null;
 		stream = null;
 	}
+
 
 	// Cancela a gravação atual e limpa a UI relacionada
 	function cancelarGravacao() {
 		if (mediaRecorder && mediaRecorder.state === "recording") {
 			mediaRecorder.stop();
 		}
-
 		if (stream) {
 			stream.getTracks().forEach((track) => track.stop());
 		}
-
 		resetGravacao();
 	}
+
 
 	// Captura imagem da webcam e envia para análise da API
 	// async function tirarFoto() {
@@ -463,7 +442,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 	hideLoading();
 	// }
 
-	function showToast({type = "success", title = "", message = "", delay = 3000,}) {
+	function showToast({
+		type = "success",
+		title = "",
+		message = "",
+		delay = 3000,
+	}) {
 		const toastEl = document.getElementById("liveToast");
 		const toastCard = document.getElementById("toastCard");
 		const toastHeader = document.getElementById("toastHeader");
@@ -542,7 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		// 	console.warn("Erro ao carregar o áudio:", soundFile, e);
 		// });
 
-        /* ====================================================== */
+		/* ====================================================== */
 
 		// Mostrar toast (Bootstrap 5) com delay customizado
 		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
