@@ -235,13 +235,15 @@ document.addEventListener("DOMContentLoaded", () => {
 				// console.log("Tamanho do blob:", blob.size);
 				// console.log("Tipo do blob:", blob.type);
 
-				gravarBtn.disabled = true;
-				btnEnviarGravacao.disabled = false;
-				btnCancelarGravacao.disabled = false;
-				controlesGravacao.classList.remove("d-none");
-
 				// Para todos os tracks de áudio
-				if (stream) stream.getTracks().forEach((track) => track.stop());
+				if (stream) {
+					stream.getTracks().forEach((track) => track.stop());
+					gravarBtn.disabled = true;
+					btnEnviarGravacao.disabled = false;
+					btnCancelarGravacao.disabled = false;
+					controlesGravacao.classList.remove("d-none");
+				} 
+				
 			};
 
 			mediaRecorder.start();
