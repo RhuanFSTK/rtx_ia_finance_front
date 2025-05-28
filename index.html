@@ -150,7 +150,6 @@
     <script src="./script.js"></script>
 
     <script>
-
         $(document).ready(function() {
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
@@ -200,71 +199,76 @@
             });
         });
 
-        $.ajax({
-            type: "GET",
-            url: "https://rtxapi.up.railway.app/consulta/",
-            data: {
-                data_inicio: dataInicio,
-                data_fim: dataFim
-            },
-            dataType: "json",
-            beforeSend: function() {
-                const tabela = $('#tabela-gastos').DataTable();
-                tabela.clear().draw();
+        function consultarPeriodo(dataInicio, dataFim, tabela) {
+            // Mostrar o spinner
+            $("#loading-spinner").show();
 
-                tabela.row.add([
-                    `<div class="text-center w-100">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Carregando...</span>
-                        </div>
-                        <p class="mt-2 mb-0">Carregando dados...</p>
-                    </div>`,
-                    '',
-                        '',
-                            ''
-                ]).draw();
-            },
-            success: function(response) {
-                const tabela = $('#tabela-gastos').DataTable();
-                tabela.clear();
-
-                let total = 0;
-
-                response.gastos.forEach(item => {
-                    const valor = parseFloat(item.valor);
-                    total += valor;
+            $.ajax({
+                type: "GET",
+                url: "https://rtxapi.up.railway.app/consulta/",
+                data: {
+                    data_inicio: dataInicio,
+                    data_fim: dataFim
+                },
+                dataType: "json",
+                beforeSend: function() {
+                    const tabela = $('#tabela-gastos').DataTable();
+                    tabela.clear().draw();
 
                     tabela.row.add([
-                        item.descricao,
-                        new Date(item.data_hora).toLocaleDateString("pt-BR"),
-                        `R$ ${valor.toFixed(2).replace(".", ",")}`,
-                        item.classificacao
-                    ]);
-                });
+                        `<div class="text-center w-100">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="mt-2 mb-0">Carregando dados...</p>
+                        </div>`,
+                        '',
+                        '',
+                        ''
+                    ]).draw();
+                },
+                success: function(response) {
+                    const tabela = $('#tabela-gastos').DataTable();
+                    tabela.clear();
 
-                // Totalizador
-                tabela.row.add([
-                    "<strong>Total</strong>",
-                    "",
-                    `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
-                    ""
-                ]).node().style.fontWeight = 'bold';
+                    let total = 0;
 
-                tabela.draw();
-            },
-            error: function() {
-                const tabela = $('#tabela-gastos').DataTable();
-                tabela.clear().draw();
+                    response.gastos.forEach(item => {
+                        const valor = parseFloat(item.valor);
+                        total += valor;
 
-                tabela.row.add([
-                    `<span class="text-danger">Erro ao carregar os dados 😢</span>`,
-                    '',
-                    '',
-                    ''
-                ]).draw();
-            }
-        });
+                        tabela.row.add([
+                            item.descricao,
+                            new Date(item.data_hora).toLocaleDateString("pt-BR"),
+                            `R$ ${valor.toFixed(2).replace(".", ",")}`,
+                            item.classificacao
+                        ]);
+                    });
 
+                    // Totalizador
+                    tabela.row.add([
+                        "<strong>Total</strong>",
+                        "",
+                        `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
+                        ""
+                    ]).node().style.fontWeight = 'bold';
+
+                    tabela.draw();
+                },
+                error: function() {
+                    const tabela = $('#tabela-gastos').DataTable();
+                    tabela.clear().draw();
+
+                    tabela.row.add([
+                        `<span class="text-danger">Erro ao carregar os dados 😢</span>`,
+                        '',
+                        '',
+                        ''
+                    ]).draw();
+                }
+            });
+
+        }
     </script>
 
 </body>
