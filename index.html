@@ -107,15 +107,6 @@
                                     <th>Classificação</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabela-body">
-                                <!-- Spinner de carregamento -->
-                                <div id="loading-spinner" class="text-center my-3" style="display: none;">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Carregando...</span>
-                                    </div>
-                                    <p>Carregando dados...</p>
-                                </div>
-                            </tbody>
                             <tfoot>
                                 <tr>
                                     <th colspan="2" style="text-align:right"></th>
@@ -159,7 +150,7 @@
     <script src="./script.js"></script>
 
     <script>
-        
+
         $(document).ready(function() {
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
@@ -209,52 +200,71 @@
             });
         });
 
-        function consultarPeriodo(dataInicio, dataFim, tabela) {
-            // Mostrar o spinner
-            $("#loading-spinner").show();
+        $.ajax({
+            type: "GET",
+            url: "https://rtxapi.up.railway.app/consulta/",
+            data: {
+                data_inicio: dataInicio,
+                data_fim: dataFim
+            },
+            dataType: "json",
+            beforeSend: function() {
+                const tabela = $('#tabela-gastos').DataTable();
+                tabela.clear().draw();
 
-            // $.ajax({
-            //     type: "GET",
-            //     url: "https://rtxapi.up.railway.app/consulta/",
-            //     data: {
-            //         data_inicio: dataInicio,
-            //         data_fim: dataFim
-            //     },
-            //     dataType: "json",
-            //     success: function(response) {
-            //         tabela.clear();
-            //         let total = 0;
+                tabela.row.add([
+                    `<div class="text-center w-100">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="mt-2 mb-0">Carregando dados...</p>
+                    </div>`,
+                    '',
+                        '',
+                            ''
+                ]).draw();
+            },
+            success: function(response) {
+                const tabela = $('#tabela-gastos').DataTable();
+                tabela.clear();
 
-            //         response.gastos.forEach(item => {
-            //             const valor = parseFloat(item.valor);
-            //             total += valor;
+                let total = 0;
 
-            //             tabela.row.add([
-            //                 item.descricao,
-            //                 new Date(item.data_hora).toLocaleDateString("pt-BR"),
-            //                 `R$ ${valor.toFixed(2).replace(".", ",")}`,
-            //                 item.classificacao
-            //             ]);
-            //         });
+                response.gastos.forEach(item => {
+                    const valor = parseFloat(item.valor);
+                    total += valor;
 
-            //         tabela.row.add([
-            //             "<strong>Total</strong>",
-            //             "",
-            //             `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
-            //             ""
-            //         ]).node().style.fontWeight = 'bold';
+                    tabela.row.add([
+                        item.descricao,
+                        new Date(item.data_hora).toLocaleDateString("pt-BR"),
+                        `R$ ${valor.toFixed(2).replace(".", ",")}`,
+                        item.classificacao
+                    ]);
+                });
 
-            //         tabela.draw();
-            //     },
-            //     error: function() {
-            //         alert("Erro ao carregar os dados.");
-            //     },
-            //     complete: function() {
-            //         // Esconde o spinner quando tudo terminar (com ou sem erro)
-            //         $("#loading-spinner").hide();
-            //     }
-            // });
-        }
+                // Totalizador
+                tabela.row.add([
+                    "<strong>Total</strong>",
+                    "",
+                    `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
+                    ""
+                ]).node().style.fontWeight = 'bold';
+
+                tabela.draw();
+            },
+            error: function() {
+                const tabela = $('#tabela-gastos').DataTable();
+                tabela.clear().draw();
+
+                tabela.row.add([
+                    `<span class="text-danger">Erro ao carregar os dados 😢</span>`,
+                    '',
+                    '',
+                    ''
+                ]).draw();
+            }
+        });
+
     </script>
 
 </body>
