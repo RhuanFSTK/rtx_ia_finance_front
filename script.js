@@ -232,18 +232,25 @@ document.addEventListener("DOMContentLoaded", () => {
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
 
-				// console.log("Tamanho do blob:", blob.size);
-				// console.log("Tipo do blob:", blob.type);
-
 				// Para todos os tracks de áudio
 				if (stream) {
 					stream.getTracks().forEach((track) => track.stop());
-					controlesGravacao.classList.remove("d-none");
-					gravarBtn.disabled = true;
-					btnEnviarGravacao.disabled = false;
-					btnCancelarGravacao.disabled = false;
-				} 
-				
+				}
+
+				// Mostra os controles de gravação (Enviar / Cancelar)
+				controlesGravacao.classList.remove("d-none");
+
+				// Reativa o botão de gravar para nova gravação
+				gravarBtn.disabled = false;
+				gravarBtn.textContent = "🎙 Gravar Áudio";
+
+				// Agora sim, libera os botões de ação
+				btnEnviarGravacao.disabled = false;
+				btnCancelarGravacao.disabled = false;
+
+				// Limpa o estado para poder regravar depois
+				mediaRecorder = null;
+				stream = null;
 			};
 
 			mediaRecorder.start();
