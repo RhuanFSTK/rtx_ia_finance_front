@@ -164,7 +164,7 @@
             // 🗓 Define a data padrão: do primeiro dia do mês até hoje
             const hoje = new Date();
             const ontem = new Date(hoje);
-            ontem.setDate(hoje.getDate() - 1);
+            ontem.setDate(hoje.getDate() + 1);
 
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
