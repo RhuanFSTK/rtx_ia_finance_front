@@ -151,24 +151,22 @@
     <script src="./script.js"></script>
     <script>
         $(document).ready(function() {
-            const hoje = new Date();
-            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-
-            // Função pra formatar como yyyy-mm-dd
-            const formatarData = (data) => data.toISOString().split('T')[0];
-
-            // Resultado
-            const dataInicio = formatarData(primeiroDia);
-            const dataFim = formatarData(hoje);
-
-            document.getElementById("data-inicio").value = dataInicio;
-            document.getElementById("data-fim").value = dataFim;
-
-            const dataInicioInput = document.getElementById("data-inicio").value;
-            const dataFimInput = document.getElementById("data-fim").value;
-
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
+            periodo(event)
+        });
+
+        function periodo(event) {
+            event.preventDefault();
+            const dataInicioInput = $('#data-inicio').val();
+            const dataFimInput = $('#data-fim').val();
+
+            console.log("📅 Consultando período:", dataInicioInput, "até", dataFimInput);
+
+            if (!dataInicioInput || !dataFimInput) {
+                console.error("❌ Data de início ou fim não informada.");
+                return;
+            }
 
             $.ajax({
                 type: "GET",
@@ -207,10 +205,11 @@
 
                     tabela.draw();
                 }
-
             });
-        });
+        }
+
     </script>
+    
 </body>
 
 </html>
