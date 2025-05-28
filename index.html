@@ -19,9 +19,11 @@
             <p class="text-muted fs-5">Gerencie seus gastos com inteligência</p>
         </div>
         <!-- Descrição do Gasto -->
-        <div class="card mb-4 shadow-sm">
+        <div class="card">
+            <div class="card-header text-white" style="background-color:#2e3b4e">
+                Nova Despesa
+            </div>
             <div class="card-body">
-                <h4 class="card-title mb-3">📝 Nova Despesa</h4>
                 <form id="texto-form">
                     <div class="input-group mb-3">
                         <input type="text" id="descricao" name="descricao" class="form-control"
@@ -33,7 +35,7 @@
         </div>
 
         <!-- Resultado de Áudio/Imagem -->
-        <div id="cardResultado" class="card mb-4 collapse shadow-sm fade">
+        <div id="cardResultado" class="card mb-4 collapse fade">
             <div class="card-body">
                 <div id="waveform-container" class="collapse mb-3">
                     <div id="waveform"></div>
@@ -60,9 +62,11 @@
         </div>
 
         <!-- Ações: Gravar Áudio, Tirar Foto, Carregar Arquivo -->
-        <div class="card mb-4 shadow-sm">
+        <div class="card">
+            <div class="card-header text-white" style="background-color:#2e3b4e">
+                Captura de Informações
+            </div>
             <div class="card-body">
-                <h4 class="card-title mb-3">Captura de Informações</h4>
                 <div class="row justify-content-between col-12 mx-auto">
                     <div class="col-md-4">
                         <button id="gravar-btn" class="btn btn-outline-primary w-100">🎙 Gravar Áudio</button>
@@ -78,9 +82,11 @@
         </div>
 
         <!-- Consulta -->
-        <div class="card shadow-sm mt-2">
+        <div class="card mt-2">
+            <div class="card-header text-white" style="background-color:#2e3b4e">
+                Consultar Gastos
+            </div>
             <div class="card-body">
-                <h4 class="card-title mb-3">📊 Consultar Gastos</h4>
                 <form id="consulta-form" class="mb-3">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-5">
@@ -114,7 +120,6 @@
                                 </tr>
                             </tfoot>
                         </table>
-
                     </div>
                 </div>
             </div>
