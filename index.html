@@ -93,7 +93,7 @@
 
                         </div>
                         <div class="col-md-2">
-                            <button class="btn btn-dark-blue w-100" type="submit">Consultar</button>
+                            <button class="btn btn-dark-blue w-100" onclick="periodo()">Consultar</button>
                         </div>
                     </div>
                 </form>
@@ -149,11 +149,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="./script.js"></script>
+
     <script>
+        
         $(document).ready(function() {
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
-            periodo(event)
+            periodo(); 
         });
 
         function periodo(event) { 
