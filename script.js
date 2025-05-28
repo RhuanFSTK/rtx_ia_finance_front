@@ -228,9 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			};
 
 			mediaRecorder.onstop = () => {
-				btnEnviarGravacao.disabled = false;
-				btnCancelarGravacao.disabled = false;
-				
 				const blob = new Blob(audioChunks, { type: mimeType });
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
