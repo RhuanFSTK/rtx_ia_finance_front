@@ -157,7 +157,6 @@
     <script src="./script.js"></script>
 
     <script>
-
         $(document).ready(function() {
             // Instância da tabela DataTable
             const tabela = $('#tabela-gastos').DataTable();
@@ -165,7 +164,7 @@
             // 🗓 Define a data padrão: do primeiro dia do mês até hoje
             const hoje = new Date();
             const ontem = new Date(hoje);
-            data_fim_new = ontem.setDate(hoje.getDate() - 1);
+            ontem.setDate(hoje.getDate() - 1);
 
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
@@ -173,7 +172,7 @@
             const formatarData = (data) => data.toISOString().split('T')[0];
 
             const dataInicioPadrao = formatarData(primeiroDia);
-            const dataFimPadrao = formatarData(data_fim_new);
+            const dataFimPadrao = formatarData(ontem);
 
             // 🖋 Preenche os inputs de data automaticamente
             $("#data-inicio").val(dataInicioPadrao);
@@ -218,6 +217,7 @@
             });
         });
 
+
         /**
          * 🔄 Função principal para consultar e preencher a tabela
          * @param {string} dataInicio - Data de início no formato yyyy-mm-dd
@@ -241,8 +241,7 @@
                             </div>
                         </div>
                     </td>
-                </tr>`
-            );
+                </tr>`);
 
             $.ajax({
                 type: "GET",
@@ -294,8 +293,7 @@
                             <td colspan="4" class="text-center text-danger py-4">
                                 Erro ao carregar os dados. Tente novamente.
                             </td>
-                        </tr>`
-                    );
+                        </tr>`);
                 }
             });
         }
