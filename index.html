@@ -159,6 +159,7 @@
     <script src="./script.js"></script>
 
     <script>
+        
         $(document).ready(function() {
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
@@ -212,47 +213,47 @@
             // Mostrar o spinner
             $("#loading-spinner").show();
 
-            $.ajax({
-                type: "GET",
-                url: "https://rtxapi.up.railway.app/consulta/",
-                data: {
-                    data_inicio: dataInicio,
-                    data_fim: dataFim
-                },
-                dataType: "json",
-                success: function(response) {
-                    tabela.clear();
-                    let total = 0;
+            // $.ajax({
+            //     type: "GET",
+            //     url: "https://rtxapi.up.railway.app/consulta/",
+            //     data: {
+            //         data_inicio: dataInicio,
+            //         data_fim: dataFim
+            //     },
+            //     dataType: "json",
+            //     success: function(response) {
+            //         tabela.clear();
+            //         let total = 0;
 
-                    response.gastos.forEach(item => {
-                        const valor = parseFloat(item.valor);
-                        total += valor;
+            //         response.gastos.forEach(item => {
+            //             const valor = parseFloat(item.valor);
+            //             total += valor;
 
-                        tabela.row.add([
-                            item.descricao,
-                            new Date(item.data_hora).toLocaleDateString("pt-BR"),
-                            `R$ ${valor.toFixed(2).replace(".", ",")}`,
-                            item.classificacao
-                        ]);
-                    });
+            //             tabela.row.add([
+            //                 item.descricao,
+            //                 new Date(item.data_hora).toLocaleDateString("pt-BR"),
+            //                 `R$ ${valor.toFixed(2).replace(".", ",")}`,
+            //                 item.classificacao
+            //             ]);
+            //         });
 
-                    tabela.row.add([
-                        "<strong>Total</strong>",
-                        "",
-                        `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
-                        ""
-                    ]).node().style.fontWeight = 'bold';
+            //         tabela.row.add([
+            //             "<strong>Total</strong>",
+            //             "",
+            //             `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
+            //             ""
+            //         ]).node().style.fontWeight = 'bold';
 
-                    tabela.draw();
-                },
-                error: function() {
-                    alert("Erro ao carregar os dados.");
-                },
-                complete: function() {
-                    // Esconde o spinner quando tudo terminar (com ou sem erro)
-                    $("#loading-spinner").hide();
-                }
-            });
+            //         tabela.draw();
+            //     },
+            //     error: function() {
+            //         alert("Erro ao carregar os dados.");
+            //     },
+            //     complete: function() {
+            //         // Esconde o spinner quando tudo terminar (com ou sem erro)
+            //         $("#loading-spinner").hide();
+            //     }
+            // });
         }
     </script>
 
