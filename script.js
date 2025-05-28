@@ -36,23 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	// arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 
-	// Periodo
-	const hoje = new Date();
-	const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-
-	// Função pra formatar como yyyy-mm-dd
-	const formatarData = (data) => data.toISOString().split('T')[0];
-
-	// Resultado
-	const dataInicio = formatarData(primeiroDia);
-	const dataFim = formatarData(hoje);
-
-	document.getElementById("data-inicio").value = dataInicio;
-	document.getElementById("data-fim").value = dataFim;
-
-	const dataInicioInput = document.getElementById("data-inicio").value;
-	const dataFimInput = document.getElementById("data-fim").value;
-
 	const toastData = sessionStorage.getItem("toastData");
 	if (toastData) {
 		// Garante que o toast será exibido com os dados corretos

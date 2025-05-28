@@ -153,22 +153,35 @@
         $(document).ready(function() {
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
-            periodo();
+
+            // Periodo
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+            // Função pra formatar como yyyy-mm-dd
+            const formatarData = (data) => data.toISOString().split('T')[0];
+
+            // Resultado
+            const dataInicio = formatarData(primeiroDia);
+            const dataFim = formatarData(hoje);
+
+            document.getElementById("data-inicio").value = dataInicio;
+            document.getElementById("data-fim").value = dataFim;
+
+            const dataInicioInput = document.getElementById("data-inicio").value;
+            const dataFimInput = document.getElementById("data-fim").value;
+
+            periodo(event);
         });
 
-        
-
         function periodo(event) {
-            if (event) event.preventDefault();
+            event.preventDefault();
 
             if (!dataInicioInput || !dataFimInput) {
                 if (!dataInicioInput) $("#data-inicio").addClass("is-invalid");
                 if (!dataFimInput) $("#data-fim").addClass("is-invalid");
                 return;
             }
-
-            const dataInicioInput = document.getElementById("data-inicio").value;
-            const dataFimInput = document.getElementById("data-fim").value;
 
             $.ajax({
                 type: "GET",
