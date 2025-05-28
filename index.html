@@ -151,34 +151,37 @@
 
     <script>
         $(document).ready(function() {
-            // Inicializa o DataTable
+            // Instância da tabela DataTable
             const tabela = $('#tabela-gastos').DataTable();
 
-            // Define o primeiro dia do mês atual
+            // 🗓 Define a data padrão: do primeiro dia do mês até hoje
             const hoje = new Date();
             const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-            // Formata as datas para yyyy-mm-dd
+            // 🔧 Função utilitária para formatar data como yyyy-mm-dd
             const formatarData = (data) => data.toISOString().split('T')[0];
-            const dataInicio = formatarData(primeiroDia);
-            const dataFim = formatarData(hoje);
 
-            // Preenche os inputs
-            $("#data-inicio").val(dataInicio);
-            $("#data-fim").val(dataFim);
+            const dataInicioPadrao = formatarData(primeiroDia);
+            const dataFimPadrao = formatarData(hoje);
 
-            // Chama a função passando as datas já preenchidas
-            consultarPeriodo(dataInicio, dataFim, tabela);
+            // 🖋 Preenche os inputs de data automaticamente
+            $("#data-inicio").val(dataInicioPadrao);
+            $("#data-fim").val(dataFimPadrao);
 
-            // Ativa o botão de filtro
+            // 🚀 Carrega os dados ao iniciar
+            consultarPeriodo(dataInicioPadrao, dataFimPadrao, tabela);
+
+            // 🎯 Evento de clique no botão "Filtrar"
             $("#btn-filtrar").on("click", function(event) {
                 event.preventDefault();
 
+                // Captura os valores dos inputs
                 const dataInicioInput = $("#data-inicio").val();
                 const dataFimInput = $("#data-fim").val();
 
-                // Validação de campos vazios
+                // 🔍 Validação dos campos
                 let valid = true;
+
                 if (!dataInicioInput) {
                     $("#data-inicio").addClass("is-invalid");
                     valid = false;
@@ -193,48 +196,51 @@
                     $("#data-fim").removeClass("is-invalid");
                 }
 
+                // Se estiver inválido, cancela
                 if (!valid) return;
 
+                // 🔁 Consulta com os dados filtrados
                 consultarPeriodo(dataInicioInput, dataFimInput, tabela);
             });
         });
 
+        /**
+         * 🔄 Função principal para consultar e preencher a tabela
+         * @param {string} dataInicio - Data de início no formato yyyy-mm-dd
+         * @param {string} dataFim - Data de fim no formato yyyy-mm-dd
+         * @param {DataTable} tabela - Instância da DataTable
+         */
         function consultarPeriodo(dataInicio, dataFim, tabela) {
-            if (!dataInicioInput || !dataFimInput) {
-                if (!dataInicioInput) $("#data-inicio").addClass("is-invalid");
-                if (!dataFimInput) $("#data-fim").addClass("is-invalid");
-                return;
-            }
-
             const tbody = $('#tabela-gastos tbody');
 
-            // Coloca loading no tbody
+            // 💡 Feedback visual de carregamento (spinner Bootstrap dentro da tabela)
             tbody.html(`
-                <tr>
-                    <td colspan="4" class="text-center py-4">
+            <tr>
+                <td colspan="4" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Carregando...</span>
                     </div>
                     <div class="mt-2 fw-bold text-primary">Carregando dados...</div>
-                    </td>
-                </tr>`
-            );
+                </td>
+            </tr>
+        `);
 
+            // 🛰️ Requisição AJAX para buscar os dados
             $.ajax({
                 type: "GET",
                 url: "https://rtxapi.up.railway.app/consulta/",
                 data: {
-                    data_inicio: dataInicioInput,
-                    data_fim: dataFimInput
+                    data_inicio: dataInicio,
+                    data_fim: dataFim
                 },
                 dataType: "json",
                 success: function(response) {
-
-                    const tabela = $('#tabela-gastos').DataTable();
+                    // Limpa a tabela antes de popular novamente
                     tabela.clear();
 
                     let total = 0;
 
+                    // 🧾 Preenche cada linha com os dados retornados
                     response.gastos.forEach(item => {
                         const valor = parseFloat(item.valor);
                         total += valor;
@@ -247,6 +253,7 @@
                         ]);
                     });
 
+                    // 📊 Adiciona linha de total
                     tabela.row.add([
                         "<strong>Total</strong>",
                         "",
@@ -255,10 +262,21 @@
                     ]).node().style.fontWeight = 'bold';
 
                     tabela.draw();
+                },
+                error: function() {
+                    // Erro na requisição
+                    tbody.html(`
+                    <tr>
+                        <td colspan="4" class="text-center text-danger py-4">
+                            Erro ao carregar os dados. Tente novamente.
+                        </td>
+                    </tr>
+                `);
                 }
             });
         }
     </script>
+
 
 </body>
 
