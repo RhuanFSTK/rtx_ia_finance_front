@@ -234,8 +234,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
 
-				// console.log("Tamanho do blob:", blob.size);
-				// console.log("Tipo do blob:", blob.type);
+				console.log("Tamanho do blob:", blob.size);
+				console.log("Tipo do blob:", blob.type);
 
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;

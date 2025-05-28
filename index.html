@@ -247,6 +247,7 @@
                 },
                 dataType: "json",
                 success: function(response) {
+                    console.log("Dados recebidos:", response);
                     tabela.clear();
 
                     const gastos = response.gastos || [];
