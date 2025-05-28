@@ -215,23 +215,22 @@
         function consultarPeriodo(dataInicio, dataFim, tabela) {
             const tbody = $('#tabela-gastos tbody');
 
-            // 💡 Feedback visual de carregamento (spinner Bootstrap dentro da tabela)
+            // 💡 Exibe spinner de carregamento
             tbody.html(`
-                <tr>
-                    <td colspan="4" class="text-center py-4 bg-white">
-                        <div class="d-flex flex-column align-items-center justify-content-center">
-                            <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #2e3b4e;">
-                                <span class="visually-hidden" style="color: #2e3b4e;">Carregando...</span>
-                            </div>
-                            <div class="mt-3 fw-bold" style="color: #2e3b4e; font-size: 1.1rem;">
-                                Carregando dados...
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            `);
+        <tr>
+            <td colspan="4" class="text-center py-4 bg-white">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #2e3b4e;">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <div class="mt-3 fw-bold" style="color: #2e3b4e; font-size: 1.1rem;">
+                        Carregando dados...
+                    </div>
+                </div>
+            </td>
+        </tr>
+    `);
 
-            // 🛰️ Requisição AJAX para buscar os dados
             $.ajax({
                 type: "GET",
                 url: "https://rtxapi.up.railway.app/consulta/",
@@ -241,13 +240,19 @@
                 },
                 dataType: "json",
                 success: function(response) {
-                    // Limpa a tabela antes de popular novamente
                     tabela.clear();
+
+                    const gastos = response.gastos || [];
+
+                    if (gastos.length === 0) {
+                        // ⚠️ Não adiciona nenhuma linha → DataTables exibe "No data available in table"
+                        tabela.draw();
+                        return;
+                    }
 
                     let total = 0;
 
-                    // 🧾 Preenche cada linha com os dados retornados
-                    response.gastos.forEach(item => {
+                    gastos.forEach(item => {
                         const valor = parseFloat(item.valor);
                         total += valor;
 
@@ -259,7 +264,6 @@
                         ]);
                     });
 
-                    // 📊 Adiciona linha de total
                     tabela.row.add([
                         "<strong>Total</strong>",
                         "",
@@ -270,19 +274,18 @@
                     tabela.draw();
                 },
                 error: function() {
-                    // Erro na requisição
+                    // 🧯 Erro na requisição
                     tbody.html(`
-                    <tr>
-                        <td colspan="4" class="text-center text-danger py-4">
-                            Erro ao carregar os dados. Tente novamente.
-                        </td>
-                    </tr>
-                `);
+                <tr>
+                    <td colspan="4" class="text-center text-danger py-4">
+                        Erro ao carregar os dados. Tente novamente.
+                    </td>
+                </tr>
+            `);
                 }
             });
         }
     </script>
-
 
 </body>
 
