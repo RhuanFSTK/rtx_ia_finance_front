@@ -151,18 +151,17 @@
     <script src="./script.js"></script>
 
     <script>
-        
         $(document).ready(function() {
             // Inicializa o DataTable
             const tabela = $('#tabela-gastos').DataTable();
-            periodo(); 
+            periodo();
         });
 
-        function periodo(event) { 
-            event.preventDefault();
+        function periodo(event) {
+            if (event) event.preventDefault();
 
-            dataInicioInput = document.getElementById("data-inicio").value;
-	        dataFimInput = document.getElementById("data-fim").value;
+            const dataInicioInput = document.getElementById("data-inicio").value;
+            const dataFimInput = document.getElementById("data-fim").value;
 
             console.log("📅 Consultando período:", dataInicioInput, "até", dataFimInput);
 
@@ -182,6 +181,7 @@
                 success: function(response) {
                     console.log("✅ Resposta recebida:", response);
 
+                    const tabela = $('#tabela-gastos').DataTable();
                     tabela.clear();
 
                     let total = 0;
@@ -198,19 +198,17 @@
                         ]);
                     });
 
-                    // Adiciona a linha de total
                     tabela.row.add([
                         "<strong>Total</strong>",
                         "",
                         `<strong>R$ ${total.toFixed(2).replace(".", ",")}</strong>`,
                         ""
-                    ]).node().style.fontWeight = 'bold'; // estiliza a linha total
+                    ]).node().style.fontWeight = 'bold';
 
                     tabela.draw();
                 }
             });
         }
-
     </script>
 
 </body>
