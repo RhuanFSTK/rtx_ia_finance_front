@@ -234,28 +234,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				// console.log("Tamanho do blob:", blob.size);
 				// console.log("Tipo do blob:", blob.type);
-				
-				// Para todos os tracks de áudio
-				if (stream) stream.getTracks().forEach((track) => track.stop());
 
-
-				// Mostra os controles de gravação (Enviar / Cancelar)
+				// Agora sim: mostra os botões de Enviar e Cancelar!
 				controlesGravacao.classList.remove("d-none");
-
-				// Reativa o botão de gravar para nova gravação
-				gravarBtn.disabled = false;
-				gravarBtn.textContent = "🎙 Gravar Áudio";
-
-				// Agora sim, libera os botões de ação
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
 
-				// Limpa o estado para poder regravar depois
+				gravarBtn.disabled = false;
+				gravarBtn.textContent = "🎙 Gravar Áudio";
+
 				mediaRecorder = null;
 				stream = null;
 			};
 
-			
+			mediaRecorder.start();
+			gravarBtn.textContent = "⏹ Parar Gravação";
+			gravarBtn.disabled = false;
 		} catch (err) {
 			mostrarResultado(
 				resultadoAudioImagem,
