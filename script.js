@@ -36,23 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	// arquivoInput.addEventListener("change", carregarArquivo);
 	textoForm.addEventListener("submit", enviarTexto);
 
-	// Periodo
-	const hoje = new Date();
-	const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-
-	// Função pra formatar como yyyy-mm-dd
-	const formatarData = (data) => data.toISOString().split('T')[0];
-
-	// Resultado
-	const dataInicio = formatarData(primeiroDia);
-	const dataFim = formatarData(hoje);
-
-	document.getElementById("data-inicio").value = dataInicio;
-	document.getElementById("data-fim").value = dataFim;
-
-	const dataInicioInput = document.getElementById("data-inicio").value;
-	const dataFimInput = document.getElementById("data-fim").value;
-
 	const toastData = sessionStorage.getItem("toastData");
 	if (toastData) {
 		// Garante que o toast será exibido com os dados corretos
@@ -134,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		const formData = new FormData();
 		formData.append('descricao', descricao);
 
-		console.log("Enviando FormData:", Array.from(formData.entries()));
+		// console.log("Enviando FormData:", Array.from(formData.entries()));
 
 		const { ok, data } = await enviarArquivoParaAPI(
 			"https://rtxapi.up.railway.app/registro/",
@@ -172,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Inicia ou encerra a gravação de áudio com visualização via WaveSurfer
 	async function toggleGravacao() {
-		console.log("Iniciando gravação");
+		// console.log("Iniciando gravação");
 
 		btnEnviar = document.getElementById("btnEnviaForm");
 		btnEnviar.disabled = true; // 👈 Desativa o botão
@@ -251,8 +234,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				const url = URL.createObjectURL(blob);
 				window.waveSurfer.load(url);
 
-				console.log("Tamanho do blob:", blob.size);
-				console.log("Tipo do blob:", blob.type);
+				// console.log("Tamanho do blob:", blob.size);
+				// console.log("Tipo do blob:", blob.type);
 
 				btnEnviarGravacao.disabled = false;
 				btnCancelarGravacao.disabled = false;
@@ -286,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Envia o áudio gravado para transcrição via API
 	async function enviarGravacao() {
-		console.log("Eviando gravação para API")
+		// console.log("Eviando gravação para API")
 		waveformContainer.classList.add("collapse");
 		if (audioChunks.length === 0) {
 			mostrarResultado(
@@ -562,10 +545,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		const toastBootstrap = new bootstrap.Toast(toastEl, { delay: delay });
 		toastBootstrap.show();
 
-		// Evento ao fechar
-		toastEl.addEventListener("hidden.bs.toast", () => {
-			console.log("Toast fechado.");
-		});
+		// // Evento ao fechar
+		// toastEl.addEventListener("hidden.bs.toast", () => {
+		// 	console.log("Toast fechado.");
+		// });
 	}
 
 	// forma de usar toast

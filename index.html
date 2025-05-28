@@ -90,10 +90,9 @@
                         <div class="col-md-5">
                             <label for="data-fim" class="form-label">Data Fim</label>
                             <input type="date" id="data-fim" class="form-control" required min="2020-01-01" max="2030-12-31">
-
                         </div>
                         <div class="col-md-2">
-                            <button class="btn btn-dark-blue w-100" onclick="periodo(event)">Consultar</button>
+                            <button class="btn btn-filtrar btn-dark-blue w-100" id="btn-filtrar">Consultar</button>
                         </div>
                     </div>
                 </form>
@@ -138,6 +137,8 @@
         </div>
     </div>
 
+    <!-- <div class="mt-3 loading-spinner">Carregando dados...</div> -->
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js@5.2.0"></script>
@@ -151,42 +152,109 @@
     <script src="./script.js"></script>
 
     <script>
+
         $(document).ready(function() {
-            // Inicializa o DataTable
+            // Instância da tabela DataTable
             const tabela = $('#tabela-gastos').DataTable();
-            periodo();
+
+            // 🗓 Define a data padrão: do primeiro dia do mês até hoje
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+            // 🔧 Função utilitária para formatar data como yyyy-mm-dd
+            const formatarData = (data) => data.toISOString().split('T')[0];
+
+            const dataInicioPadrao = formatarData(primeiroDia);
+            const dataFimPadrao = formatarData(hoje);
+
+            // 🖋 Preenche os inputs de data automaticamente
+            $("#data-inicio").val(dataInicioPadrao);
+            $("#data-fim").val(dataFimPadrao);
+
+            // 🚀 Carrega os dados ao iniciar
+            consultarPeriodo(dataInicioPadrao, dataFimPadrao, tabela);
+
+            // 🎯 Evento de clique no botão "Filtrar"
+            $("#btn-filtrar").on("click", function(event) {
+                event.preventDefault();
+
+                // Captura os valores dos inputs
+                const dataInicioInput = $("#data-inicio").val();
+                const dataFimInput = $("#data-fim").val();
+
+                // 🔍 Validação dos campos
+                let valid = true;
+
+                if (!dataInicioInput) {
+                    $("#data-inicio").addClass("is-invalid");
+                    valid = false;
+                } else {
+                    $("#data-inicio").removeClass("is-invalid");
+                }
+
+                if (!dataFimInput) {
+                    $("#data-fim").addClass("is-invalid");
+                    valid = false;
+                } else {
+                    $("#data-fim").removeClass("is-invalid");
+                }
+
+                // Se estiver inválido, cancela
+                if (!valid) return;
+
+                // 🔁 Consulta com os dados filtrados
+                consultarPeriodo(dataInicioInput, dataFimInput, tabela);
+            });
         });
 
-        function periodo(event) {
-            if (event) event.preventDefault();
+        /**
+         * 🔄 Função principal para consultar e preencher a tabela
+         * @param {string} dataInicio - Data de início no formato yyyy-mm-dd
+         * @param {string} dataFim - Data de fim no formato yyyy-mm-dd
+         * @param {DataTable} tabela - Instância da DataTable
+         */
 
-            const dataInicioInput = document.getElementById("data-inicio").value;
-            const dataFimInput = document.getElementById("data-fim").value;
+        function consultarPeriodo(dataInicio, dataFim, tabela) {
+            const tbody = $('#tabela-gastos tbody');
 
-            console.log("📅 Consultando período:", dataInicioInput, "até", dataFimInput);
-
-            if (!dataInicioInput || !dataFimInput) {
-                console.error("❌ Data de início ou fim não informada.");
-                return;
-            }
+            // 💡 Exibe spinner de carregamento
+            tbody.html(`
+                <tr>
+                    <td colspan="4" class="text-center py-4 bg-white">
+                        <div class="d-flex flex-column align-items-center justify-content-center">
+                            <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #2e3b4e;">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <div class="mt-3 fw-bold" style="color: #2e3b4e; font-size: 1.1rem;">
+                                Carregando dados...
+                            </div>
+                        </div>
+                    </td>
+                </tr>`
+            );
 
             $.ajax({
                 type: "GET",
                 url: "https://rtxapi.up.railway.app/consulta/",
                 data: {
-                    data_inicio: dataInicioInput,
-                    data_fim: dataFimInput
+                    data_inicio: dataInicio,
+                    data_fim: dataFim
                 },
                 dataType: "json",
                 success: function(response) {
-                    console.log("✅ Resposta recebida:", response);
-
-                    const tabela = $('#tabela-gastos').DataTable();
                     tabela.clear();
+
+                    const gastos = response.gastos || [];
+
+                    if (gastos.length === 0) {
+                        // ⚠️ Não adiciona nenhuma linha → DataTables exibe "No data available in table"
+                        tabela.draw();
+                        return;
+                    }
 
                     let total = 0;
 
-                    response.gastos.forEach(item => {
+                    gastos.forEach(item => {
                         const valor = parseFloat(item.valor);
                         total += valor;
 
@@ -206,6 +274,16 @@
                     ]).node().style.fontWeight = 'bold';
 
                     tabela.draw();
+                },
+                error: function() {
+                    // 🧯 Erro na requisição
+                    tbody.html(`
+                        <tr>
+                            <td colspan="4" class="text-center text-danger py-4">
+                                Erro ao carregar os dados. Tente novamente.
+                            </td>
+                        </tr>`
+                    );
                 }
             });
         }
